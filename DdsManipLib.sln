@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DdsManipLib", "DdsManipLib\DdsManipLib.csproj", "{A760C5F9-0868-49BA-A205-EF1C8E645290}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DdsManipLib.Example", "DdsManipLib.Example\DdsManipLib.Example.csproj", "{1C90AF89-3E0D-459C-A1BE-21AD8F93C88E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A760C5F9-0868-49BA-A205-EF1C8E645290}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A760C5F9-0868-49BA-A205-EF1C8E645290}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A760C5F9-0868-49BA-A205-EF1C8E645290}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A760C5F9-0868-49BA-A205-EF1C8E645290}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C90AF89-3E0D-459C-A1BE-21AD8F93C88E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C90AF89-3E0D-459C-A1BE-21AD8F93C88E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C90AF89-3E0D-459C-A1BE-21AD8F93C88E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C90AF89-3E0D-459C-A1BE-21AD8F93C88E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
