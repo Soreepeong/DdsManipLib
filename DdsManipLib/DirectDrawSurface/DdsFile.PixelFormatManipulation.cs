@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using DdsManipLib.DirectDrawSurface.PixelFormats;
+using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 namespace DdsManipLib.DirectDrawSurface;
 

@@ -1,8 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
+using DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
+using DdsManipLib.DirectDrawSurface.PixelFormats.PlainPixelFormats;
 
 namespace DdsManipLib.DirectDrawSurface;
 
@@ -108,21 +114,11 @@ public struct DdsPixelFormat {
     }
 
     /// <summary>
-    /// Set this object to indicate a luminance channel, and optionally with an alpha channel.
-    /// </summary>
-    public void SetLuminance(int nbits, uint lmask, uint amask) {
-        this = default;
-        Size = Unsafe.SizeOf<DdsPixelFormat>();
-        RgbBitCount = nbits;
-        Flags = DdsPixelFormatFlags.Luminance | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels);
-        RBitMask = lmask;
-        ABitMask = amask;
-    }
-
-    /// <summary>
     /// Set this object to indicate an alpha channel.
     /// </summary>
     public void SetAlpha(int nbits, uint amask) {
+        if (nbits is < 0 or > 32)
+            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
         this = default;
         Size = Unsafe.SizeOf<DdsPixelFormat>();
         RgbBitCount = nbits;
@@ -131,9 +127,11 @@ public struct DdsPixelFormat {
     }
 
     /// <summary>
-    /// Set this object to indicate BGRA channels.
+    /// Set this object to indicate RGB(A) channels.
     /// </summary>
     public void SetBgra(int nbits, uint bmask, uint gmask, uint rmask, uint amask) {
+        if (nbits is < 0 or > 32)
+            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
         this = default;
         Size = Unsafe.SizeOf<DdsPixelFormat>();
         RgbBitCount = nbits;
@@ -145,22 +143,134 @@ public struct DdsPixelFormat {
     }
 
     /// <summary>
-    /// Attempt to deduce a corresponding <see cref="PixelFormat"/> from this <see cref="DdsPixelFormat"/>.
+    /// Set this object to indicate a luminance channel, and optionally with an alpha channel.
     /// </summary>
-    /// <param name="pixelFormat">The resulting pixel format, or <see cref="UnknownPixelFormat"/> if not found.</param>
+    public void SetLuminance(int nbits, uint lmask, uint amask) {
+        if (nbits is < 0 or > 32)
+            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
+        this = default;
+        Size = Unsafe.SizeOf<DdsPixelFormat>();
+        RgbBitCount = nbits;
+        Flags = DdsPixelFormatFlags.Luminance | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels);
+        RBitMask = lmask;
+        ABitMask = amask;
+    }
+
+    /// <summary>
+    /// Set this object to indicate YUV(A) channels.
+    /// </summary>
+    public void SetYuv(int nbits, uint ymask, uint umask, uint vmask, uint amask) {
+        if (nbits is < 0 or > 32)
+            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
+        this = default;
+        Size = Unsafe.SizeOf<DdsPixelFormat>();
+        RgbBitCount = nbits;
+        Flags = DdsPixelFormatFlags.Yuv | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels);
+        BBitMask = vmask;
+        GBitMask = umask;
+        RBitMask = ymask;
+        ABitMask = amask;
+    }
+
+    /// <summary>
+    /// Attempt to deduce the fields of this object from a <see cref="IPixelFormat"/>.
+    /// </summary>
+    /// <param name="value">The value to convert from.</param>
     /// <returns>Whether the corresponding format has been found.</returns>
-    public bool TryGetPixelFormat(out PixelFormat pixelFormat) {
-        pixelFormat = UnknownPixelFormat.Instance;
+    public bool TryUpdateFromPixelFormat(IPixelFormat value) {
+        if (Enum.GetNames<DdsFourCc>()
+                .FirstOrDefault(x => value.Equals(typeof(DdsFourCc).GetField(x)?.GetCustomAttribute<PixelFormat>())) is { } fourCcName) {
+            SetFourCc(Enum.Parse<DdsFourCc>(fourCcName));
+            return true;
+        }
+        
+        if (value.Bpp is < 0 or > 32)
+            return false;
+
+        if (value is RgbaxxPixelFormat rgbaxx) {
+            if (rgbaxx.X2 is not null)
+                return false;
+            SetBgra(
+                value.Bpp,
+                rgbaxx.Red?.BitMask32Shifted ?? 0u,
+                rgbaxx.Green?.BitMask32Shifted ?? 0u,
+                rgbaxx.Blue?.BitMask32Shifted ?? 0u, 
+                rgbaxx.Alpha?.BitMask32Shifted ?? 0u);
+            return true;
+        }
+        
+        if (value is not IPlainPixelFormat)
+            return false;
+
+        if (value is IX2PlainPixelFormat)
+            return false;
+
+        var r = value as IRedPlainPixelFormat;
+        var g = value as IGreenPlainPixelFormat;
+        var b = value as IBluePlainPixelFormat;
+        var a = value as IAlphaPlainPixelFormat;
+        var l = value as ILuminancePlainPixelFormat;
+        var yuv = value as IYuvPlainPixelFormat;
+        var x1 = value as IX1PlainPixelFormat;
+
+        if (r is not null || g is not null || b is not null) {
+            if (l is not null || yuv is not null)
+                return false;
+            SetBgra(
+                value.Bpp,
+                r?.Red.BitMask32Shifted ?? 0u,
+                g?.Green.BitMask32Shifted ?? 0u,
+                b?.Blue.BitMask32Shifted ?? 0u, 
+                a?.Alpha.BitMask32Shifted ?? 0u);
+            return true;
+        }
+
+        if (yuv is not null) {
+            SetYuv(
+                value.Bpp,
+                yuv.Luminance.BitMask32Shifted,
+                yuv.ChromaBlue.BitMask32Shifted,
+                yuv.ChromaRed.BitMask32Shifted, 
+                a?.Alpha.BitMask32Shifted ?? 0u);
+            return true;
+        }
+
+        if (l is not null) {
+            SetLuminance(value.Bpp, l.Luminance.BitMask32Shifted, a?.Alpha.BitMask32Shifted ?? 0u);
+            return true;
+        }
+
+        if (a is not null) {
+            SetAlpha(value.Bpp, a.Alpha.BitMask32Shifted);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Attempt to deduce a corresponding <see cref="IPixelFormat"/> from this <see cref="DdsPixelFormat"/>.
+    /// </summary>
+    /// <param name="pixelFormat">The resulting pixel format, or null if not found.</param>
+    /// <returns>Whether the corresponding format has been found.</returns>
+    public bool TryGetPixelFormat([MaybeNullWhen(false)] out IPixelFormat pixelFormat) {
+        pixelFormat = null;
 
         if (!Flags.HasFlag(DdsPixelFormatFlags.FourCc)) {
             var alpha = new ChannelDefinition();
-            if (Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels))
-                alpha = ChannelDefinition.FromMask(ChannelType.Unorm, ABitMask);
+            
+            var am = Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ABitMask : 0u;
             if (Flags.HasFlag(DdsPixelFormatFlags.Rgb)) {
                 var xbitmask =
                     unchecked((1u << RgbBitCount) - 1u) & ~(RBitMask | GBitMask | BBitMask) &
                     (Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ~ABitMask : ~0u);
-                pixelFormat = new RgbaPixelFormat(
+
+                var rm = RBitMask;
+                var gm = GBitMask;
+                var bm = BBitMask;
+                var xm = 0xFFFFFFFFu & ~(am | rm | gm | bm);
+
+                    pixelFormat = new RgbaPixelFormat(
                     alpha.IsEmpty ? AlphaType.None : AlphaType.Straight,
                     r: ChannelDefinition.FromMask(ChannelType.Unorm, RBitMask),
                     g: ChannelDefinition.FromMask(ChannelType.Unorm, GBitMask),
@@ -210,84 +320,5 @@ public struct DdsPixelFormat {
 
         pixelFormat = FourCc.ToPixelFormat();
         return !Equals(pixelFormat, UnknownPixelFormat.Instance);
-    }
-
-    /// <summary>
-    /// Attempt to deduce the fields of this object from a <see cref="PixelFormat"/>.
-    /// </summary>
-    /// <param name="value">The value to convert from.</param>
-    /// <returns>Whether the corresponding format has been found.</returns>
-    public bool TryUpdateFromPixelFormat(PixelFormat value) {
-        if (value.Alpha is AlphaType.Straight or AlphaType.None) {
-            var alpha = value.Alpha is AlphaType.Straight;
-            switch (value) {
-                case RgbaPixelFormat {X2.IsEmpty: true} rgba
-                    when rgba.R.Bits + rgba.G.Bits + rgba.B.Bits + rgba.A.Bits + rgba.X1.Bits <= 32
-                    && (rgba.R.IsEmpty || rgba.R.Type is ChannelType.Unorm)
-                    && (rgba.G.IsEmpty || rgba.G.Type is ChannelType.Unorm)
-                    && (rgba.B.IsEmpty || rgba.B.Type is ChannelType.Unorm)
-                    && (rgba.A.IsEmpty || rgba.A.Type is ChannelType.Unorm): {
-                    Size = Unsafe.SizeOf<DdsPixelFormat>();
-                    Flags = (alpha ? DdsPixelFormatFlags.AlphaPixels : 0)
-                        | (rgba.R.IsEmpty && rgba.G.IsEmpty && rgba.B.IsEmpty
-                            ? DdsPixelFormatFlags.Alpha
-                            : DdsPixelFormatFlags.Rgb);
-                    FourCc = 0;
-                    RgbBitCount = rgba.R.Bits + rgba.G.Bits + rgba.B.Bits + rgba.A.Bits + rgba.X1.Bits;
-                    RBitMask = rgba.R.Mask << rgba.R.Shift;
-                    GBitMask = rgba.G.Mask << rgba.G.Shift;
-                    BBitMask = rgba.B.Mask << rgba.B.Shift;
-                    ABitMask = rgba.A.Mask << rgba.A.Shift;
-                    return true;
-                }
-                case YuvPixelFormat {X.IsEmpty: true} yuv
-                    when yuv.Y.Bits + yuv.U.Bits + yuv.V.Bits + yuv.A.Bits + yuv.X.Bits <= 32
-                    && (yuv.Y.IsEmpty || yuv.Y.Type is ChannelType.Unorm)
-                    && (yuv.U.IsEmpty || yuv.U.Type is ChannelType.Unorm)
-                    && (yuv.V.IsEmpty || yuv.V.Type is ChannelType.Unorm)
-                    && (yuv.A.IsEmpty || yuv.A.Type is ChannelType.Unorm): {
-                    Size = Unsafe.SizeOf<DdsPixelFormat>();
-                    Flags = (alpha ? DdsPixelFormatFlags.AlphaPixels : 0)
-                        | (yuv.Y.IsEmpty && yuv.U.IsEmpty && yuv.V.IsEmpty
-                            ? DdsPixelFormatFlags.Alpha
-                            : DdsPixelFormatFlags.Yuv);
-                    FourCc = 0;
-                    RgbBitCount = yuv.Y.Bits + yuv.U.Bits + yuv.V.Bits + yuv.A.Bits + yuv.X.Bits;
-                    RBitMask = yuv.Y.Mask << yuv.Y.Shift;
-                    GBitMask = yuv.U.Mask << yuv.U.Shift;
-                    BBitMask = yuv.V.Mask << yuv.V.Shift;
-                    ABitMask = yuv.A.Mask << yuv.A.Shift;
-                    return true;
-                }
-                case LumiPixelFormat {X.IsEmpty: true} lumi
-                    when lumi.L.Bits + lumi.A.Bits + lumi.X.Bits <= 32
-                    && (lumi.L.IsEmpty || lumi.L.Type is ChannelType.Unorm)
-                    && (lumi.A.IsEmpty || lumi.A.Type is ChannelType.Unorm): {
-                    Size = Unsafe.SizeOf<DdsPixelFormat>();
-                    Flags = (alpha ? DdsPixelFormatFlags.AlphaPixels : 0)
-                        | (lumi.L.IsEmpty
-                            ? DdsPixelFormatFlags.Alpha
-                            : DdsPixelFormatFlags.Luminance);
-                    FourCc = 0;
-                    RgbBitCount = lumi.L.Bits + lumi.A.Bits + lumi.X.Bits;
-                    RBitMask = lumi.L.Mask << lumi.L.Shift;
-                    ABitMask = lumi.A.Mask << lumi.A.Shift;
-                    GBitMask = BBitMask = 0;
-                    return true;
-                }
-            }
-        }
-
-        var fourCc = value.ToFourCc();
-        if (fourCc != DdsFourCc.Unknown) {
-            Size = Unsafe.SizeOf<DdsPixelFormat>();
-            Flags = DdsPixelFormatFlags.FourCc;
-            FourCc = fourCc;
-            RgbBitCount = 0;
-            RBitMask = GBitMask = BBitMask = ABitMask = 0;
-            return true;
-        }
-
-        return false;
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
 public readonly partial struct ChannelDefinition {
     /// <summary>

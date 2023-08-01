@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
 /// <summary>
 /// Defines a channel.

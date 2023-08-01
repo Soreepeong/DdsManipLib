@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 using DdsManipLib.Utilities;
 
 namespace DdsManipLib.DirectDrawSurface;

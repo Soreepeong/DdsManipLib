@@ -2,9 +2,9 @@
 using System.Linq;
 using DdsManipLib.BcCodec;
 using DdsManipLib.BcCodec.SquishInternal;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+using DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
-namespace DdsManipLib.DirectDrawSurface.PixelFormats;
+namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 /// <summary>
 /// Represent a pixel format containing luminous values instead of colors without compression.

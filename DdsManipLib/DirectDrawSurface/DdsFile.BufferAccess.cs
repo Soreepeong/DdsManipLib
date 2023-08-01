@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using DdsManipLib.DirectDrawSurface.PixelFormats;
+using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 namespace DdsManipLib.DirectDrawSurface;
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
 /// <summary>
 /// How a channel is stored.

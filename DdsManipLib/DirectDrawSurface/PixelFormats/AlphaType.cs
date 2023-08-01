@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 
 /// <summary>
 /// How the transparency is encoded in a pixel.

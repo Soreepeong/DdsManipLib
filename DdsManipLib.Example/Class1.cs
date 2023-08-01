@@ -1,6 +1,7 @@
 ﻿using DdsManipLib.DirectDrawSurface;
 using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
+using DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
 namespace DdsManipLib.Example;
 

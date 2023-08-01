@@ -1,5 +1,4 @@
 ﻿using System;
-using DdsManipLib.DirectDrawSurface.PixelFormats;
 
 namespace DdsManipLib.DirectDrawSurface;
 

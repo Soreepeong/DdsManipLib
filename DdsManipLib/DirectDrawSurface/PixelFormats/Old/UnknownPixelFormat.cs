@@ -1,7 +1,6 @@
 ﻿using System;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
 
-namespace DdsManipLib.DirectDrawSurface.PixelFormats;
+namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 /// <summary>
 /// Represent a pixel format that is not supported by us.
