@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
 
@@ -7,6 +8,8 @@ public readonly partial struct ChannelDefinition {
     /// Encode the channel value as a raw value.
     /// </summary>
     public void EncodeRaw(Span<byte> data, int bitOffset, uint value) {
+        bitOffset += Shift;
+        
         var shift = bitOffset % 8;
         data = data[(bitOffset / 8)..];
 
@@ -169,5 +172,11 @@ public readonly partial struct ChannelDefinition {
             default:
                 throw new NotSupportedException();
         }
+    }
+
+    public void EncodeNumber<T>(Span<byte> data, int bitOffset, T value)
+        where T : unmanaged, INumber<T> {
+        if (Bits == 0)
+            return;
     }
 }

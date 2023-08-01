@@ -9,19 +9,19 @@ namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 /// </summary>
 public static class PixelFormatResolver {
     /// <summary>
-    /// Maps between <see cref="DdsFourCc"/> and <see cref="PixelFormat"/>.
+    /// Maps between <see cref="DdsFourCc"/> and <see cref="IPixelFormat"/>.
     /// </summary>
-    public static readonly IReadOnlyDictionary<DdsFourCc, PixelFormat> FourCcToPixelFormat;
+    public static readonly IReadOnlyDictionary<DdsFourCc, IPixelFormat> FourCcToPixelFormat;
 
     /// <summary>
-    /// Maps between <see cref="DxgiFormat"/> and <see cref="PixelFormat"/>.
+    /// Maps between <see cref="DxgiFormat"/> and <see cref="IPixelFormat"/>.
     /// </summary>
-    public static readonly IReadOnlyDictionary<AlphaType, IReadOnlyDictionary<DxgiFormat, PixelFormat>>
+    public static readonly IReadOnlyDictionary<AlphaType, IReadOnlyDictionary<DxgiFormat, IPixelFormat>>
         DxgiFormatToPixelFormat;
 
     // https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-data-conversion
     static PixelFormatResolver() {
-        FourCcToPixelFormat = new Dictionary<DdsFourCc, PixelFormat> {
+        FourCcToPixelFormat = new Dictionary<DdsFourCc, IPixelFormat> {
             {DdsFourCc.Dxt1, new BcPixelFormat(ChannelType.Unorm, AlphaType.None, 1)},
             {DdsFourCc.Dxt2, new BcPixelFormat(ChannelType.Unorm, AlphaType.Premultiplied, 2)},
             {DdsFourCc.Dxt3, new BcPixelFormat(ChannelType.Unorm, AlphaType.Straight, 2)},

@@ -35,7 +35,7 @@ internal unsafe ref struct Bc7ParsedBlock {
         var bsr = new ByteSpanBitReader(block);
 
         Mode = Bc7Mode.GetFromFirstByte(block[0]);
-        if (Mode.Mode == 0xFF)
+        if (Mode.Subsets == 0)
             return false;
         bsr.Offset = Mode.Mode + 1;
 

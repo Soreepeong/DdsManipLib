@@ -76,7 +76,7 @@ public class LumiPixelFormat : PixelFormat, IEquatable<LumiPixelFormat> {
                 targetPixelFormat.R.EncodeFloat(targetRow, targetOffset, l);
                 targetPixelFormat.G.EncodeFloat(targetRow, targetOffset, l);
                 targetPixelFormat.B.EncodeFloat(targetRow, targetOffset, l);
-                targetPixelFormat.A.EncodeFloat(targetRow, targetOffset, A.DecodeFloat(sourceRow, sourceOffset));
+                targetPixelFormat.A.EncodeFloat(targetRow, targetOffset, A.DecodeFloat(sourceRow, sourceOffset, 1f));
                 channelX.EncodeFloat(targetRow, targetOffset, X.DecodeFloat(sourceRow, sourceOffset));
             }
         }
@@ -115,7 +115,7 @@ public class LumiPixelFormat : PixelFormat, IEquatable<LumiPixelFormat> {
                     for (var bx = 0; bx < bw; bx++) {
                         var span = source[(sourceStride * (y + by))..];
                         buf[by * 16 + bx * 4 + 0] = L.DecodeByte(span, Bpp * (x + bx));
-                        buf[by * 16 + bx * 4 + 1] = A.DecodeByte(span, Bpp * (x + bx));
+                        buf[by * 16 + bx * 4 + 1] = A.DecodeByte(span, Bpp * (x + bx), byte.MaxValue);
                         mask |= 1 << (by * 4 + bx);
                     }
                 }
@@ -152,7 +152,7 @@ public class LumiPixelFormat : PixelFormat, IEquatable<LumiPixelFormat> {
                 var sourceOffset = Bpp * x;
                 var targetOffset = targetPixelFormat.Bpp * x;
                 targetPixelFormat.L.EncodeFloat(targetRow, targetOffset, L.DecodeFloat(sourceRow, sourceOffset));
-                targetPixelFormat.A.EncodeFloat(targetRow, targetOffset, A.DecodeFloat(sourceRow, sourceOffset));
+                targetPixelFormat.A.EncodeFloat(targetRow, targetOffset, A.DecodeFloat(sourceRow, sourceOffset, 1f));
                 targetPixelFormat.X.EncodeFloat(targetRow, targetOffset, X.DecodeFloat(sourceRow, sourceOffset));
             }
         }
@@ -170,4 +170,23 @@ public class LumiPixelFormat : PixelFormat, IEquatable<LumiPixelFormat> {
 
     /// <inheritdoc/>
     public override int GetHashCode() => HashCode.Combine(L, A, X, (int) Alpha);
+
+    /// <summary>
+    /// Create a new instance of <see cref="LumiPixelFormat"/>.
+    /// </summary>
+    public static LumiPixelFormat NewL(int lbits, int xbits, ChannelType type) =>
+        new(
+            alphaType: AlphaType.None,
+            l: new(type, 0, lbits),
+            x: new(ChannelType.Typeless, lbits, xbits));
+
+    /// <summary>
+    /// Create a new instance of <see cref="LumiPixelFormat"/>.
+    /// </summary>
+    public static LumiPixelFormat NewLa(int lbits, int abits, int xbits, ChannelType type, AlphaType alphaType) =>
+        new(
+            alphaType: alphaType,
+            l: new(type, 0, lbits),
+            a: new(type, lbits, abits),
+            x: new(ChannelType.Typeless, lbits + abits, xbits));
 }

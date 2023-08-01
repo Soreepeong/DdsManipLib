@@ -98,6 +98,53 @@ public struct DdsPixelFormat {
     }
 
     /// <summary>
+    /// Set this object to indicate a FourCC.
+    /// </summary>
+    public void SetFourCc(DdsFourCc fourCc) {
+        this = default;
+        Size = Unsafe.SizeOf<DdsPixelFormat>();
+        Flags = DdsPixelFormatFlags.FourCc;
+        FourCc = fourCc;
+    }
+
+    /// <summary>
+    /// Set this object to indicate a luminance channel, and optionally with an alpha channel.
+    /// </summary>
+    public void SetLuminance(int nbits, uint lmask, uint amask) {
+        this = default;
+        Size = Unsafe.SizeOf<DdsPixelFormat>();
+        RgbBitCount = nbits;
+        Flags = DdsPixelFormatFlags.Luminance | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels);
+        RBitMask = lmask;
+        ABitMask = amask;
+    }
+
+    /// <summary>
+    /// Set this object to indicate an alpha channel.
+    /// </summary>
+    public void SetAlpha(int nbits, uint amask) {
+        this = default;
+        Size = Unsafe.SizeOf<DdsPixelFormat>();
+        RgbBitCount = nbits;
+        Flags = DdsPixelFormatFlags.Alpha | DdsPixelFormatFlags.AlphaPixels;
+        ABitMask = amask;
+    }
+
+    /// <summary>
+    /// Set this object to indicate BGRA channels.
+    /// </summary>
+    public void SetBgra(int nbits, uint bmask, uint gmask, uint rmask, uint amask) {
+        this = default;
+        Size = Unsafe.SizeOf<DdsPixelFormat>();
+        RgbBitCount = nbits;
+        Flags = DdsPixelFormatFlags.Rgb | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels);
+        BBitMask = bmask;
+        GBitMask = gmask;
+        RBitMask = rmask;
+        ABitMask = amask;
+    }
+
+    /// <summary>
     /// Attempt to deduce a corresponding <see cref="PixelFormat"/> from this <see cref="DdsPixelFormat"/>.
     /// </summary>
     /// <param name="pixelFormat">The resulting pixel format, or <see cref="UnknownPixelFormat"/> if not found.</param>

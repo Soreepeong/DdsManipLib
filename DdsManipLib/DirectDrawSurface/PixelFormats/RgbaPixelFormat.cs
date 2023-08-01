@@ -145,13 +145,13 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
 
                 switch (modeA) {
                     case 0:
-                        targetPixelFormat.A.EncodeFloat(targetRow, targetOffset, A.DecodeFloat(sourceRow, sourceOffset));
+                        targetPixelFormat.A.EncodeFloat(targetRow, targetOffset, A.DecodeFloat(sourceRow, sourceOffset, 1f));
                         break;
                     case 1:
-                        targetPixelFormat.A.EncodeSByte(targetRow, targetOffset, A.DecodeSByte(sourceRow, sourceOffset));
+                        targetPixelFormat.A.EncodeSByte(targetRow, targetOffset, A.DecodeSByte(sourceRow, sourceOffset, sbyte.MaxValue));
                         break;
                     default:
-                        targetPixelFormat.A.EncodeByte(targetRow, targetOffset, A.DecodeByte(sourceRow, sourceOffset));
+                        targetPixelFormat.A.EncodeByte(targetRow, targetOffset, A.DecodeByte(sourceRow, sourceOffset, byte.MaxValue));
                         break;
                 }
 
@@ -209,12 +209,12 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
 
                 var mask = 0;
                 for (var by = 0; by < bh; by++) {
+                    var span = source[(sourceStride * (y + by))..];
                     for (var bx = 0; bx < bw; bx++) {
-                        var span = source[(sourceStride * (y + by))..];
                         buf[by * 16 + bx * 4 + 0] = R.DecodeByte(span, Bpp * (x + bx));
                         buf[by * 16 + bx * 4 + 1] = G.DecodeByte(span, Bpp * (x + bx));
                         buf[by * 16 + bx * 4 + 2] = B.DecodeByte(span, Bpp * (x + bx));
-                        buf[by * 16 + bx * 4 + 3] = A.DecodeByte(span, Bpp * (x + bx));
+                        buf[by * 16 + bx * 4 + 3] = A.DecodeByte(span, Bpp * (x + bx), byte.MaxValue);
                         mask |= 1 << (by * 4 + bx);
                     }
                 }
@@ -265,17 +265,17 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
                 var weightSum = 0f;
                 var weightMax = 0f;
                 if (!R.IsEmpty) {
-                    weightSum += redWeight * R.DecodeFloat(sourceRow, sourceOffset);
+                    weightSum += redWeight * R.DecodeNormalizedFloat(sourceRow, sourceOffset);
                     weightMax += redWeight;
                 }
 
                 if (!G.IsEmpty) {
-                    weightSum += greenWeight * G.DecodeFloat(sourceRow, sourceOffset);
+                    weightSum += greenWeight * G.DecodeNormalizedFloat(sourceRow, sourceOffset);
                     weightMax += greenWeight;
                 }
 
                 if (!B.IsEmpty) {
-                    weightSum += blueWeight * B.DecodeFloat(sourceRow, sourceOffset);
+                    weightSum += blueWeight * B.DecodeNormalizedFloat(sourceRow, sourceOffset);
                     weightMax += blueWeight;
                 }
 
@@ -283,13 +283,13 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
 
                 switch (modeA) {
                     case 0:
-                        targetPixelFormat.A.EncodeFloat(targetRow, targetOffset, A.DecodeFloat(sourceRow, sourceOffset));
+                        targetPixelFormat.A.EncodeFloat(targetRow, targetOffset, A.DecodeFloat(sourceRow, sourceOffset, 1f));
                         break;
                     case 1:
-                        targetPixelFormat.A.EncodeSByte(targetRow, targetOffset, A.DecodeSByte(sourceRow, sourceOffset));
+                        targetPixelFormat.A.EncodeSByte(targetRow, targetOffset, A.DecodeSByte(sourceRow, sourceOffset, sbyte.MaxValue));
                         break;
                     default:
-                        targetPixelFormat.A.EncodeByte(targetRow, targetOffset, A.DecodeByte(sourceRow, sourceOffset));
+                        targetPixelFormat.A.EncodeByte(targetRow, targetOffset, A.DecodeByte(sourceRow, sourceOffset, byte.MaxValue));
                         break;
                 }
 
@@ -331,7 +331,7 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
     public override int GetHashCode() => HashCode.Combine(R, G, B, A, X1, X2, (int) Alpha);
 
     /// <summary>
-    /// Create a new instance of RgbaPixelFormat.
+    /// Create a new instance of <see cref="RgbaPixelFormat"/>.
     /// </summary>
     public static RgbaPixelFormat NewR(int rbits, int xbits1, int xbits2, ChannelType type) => new(
         alphaType: AlphaType.None,
@@ -340,7 +340,7 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
         x2: new(ChannelType.Typeless, rbits + xbits1, xbits2));
 
     /// <summary>
-    /// Create a new instance of RgbaPixelFormat.
+    /// Create a new instance of <see cref="RgbaPixelFormat"/>.
     /// </summary>
     public static RgbaPixelFormat NewA(int abits, int xbits1, int xbits2, ChannelType type, AlphaType alphaType) =>
         new(
@@ -350,7 +350,7 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
             x2: new(ChannelType.Typeless, abits + xbits1, xbits2));
 
     /// <summary>
-    /// Create a new instance of RgbaPixelFormat.
+    /// Create a new instance of <see cref="RgbaPixelFormat"/>.
     /// </summary>
     public static RgbaPixelFormat NewRg(int rbits, int gbits, int xbits1, int xbits2, ChannelType type) => new(
         alphaType: AlphaType.None,
@@ -360,7 +360,7 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
         x2: new(ChannelType.Typeless, rbits + gbits + xbits1, xbits2));
 
     /// <summary>
-    /// Create a new instance of RgbaPixelFormat.
+    /// Create a new instance of <see cref="RgbaPixelFormat"/>.
     /// </summary>
     public static RgbaPixelFormat NewRgb(int rbits, int gbits, int bbits, int xbits1, int xbits2, ChannelType type) =>
         new(
@@ -372,7 +372,7 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
             x2: new(ChannelType.Typeless, rbits + gbits + bbits + xbits1, xbits2));
 
     /// <summary>
-    /// Create a new instance of RgbaPixelFormat.
+    /// Create a new instance of <see cref="RgbaPixelFormat"/>.
     /// </summary>
     public static RgbaPixelFormat NewRgba(
         int rbits,
@@ -393,7 +393,7 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
             x2: new(ChannelType.Typeless, rbits + bbits + bbits + abits + xbits1, xbits2));
 
     /// <summary>
-    /// Create a new instance of RgbaPixelFormat.
+    /// Create a new instance of <see cref="RgbaPixelFormat"/>.
     /// </summary>
     public static RgbaPixelFormat NewBgr(int rbits, int gbits, int bbits, int xbits1, int xbits2, ChannelType type) =>
         new(
@@ -405,7 +405,7 @@ public class RgbaPixelFormat : PixelFormat, IEquatable<RgbaPixelFormat> {
             x2: new(ChannelType.Typeless, bbits + gbits + rbits + xbits1, xbits2));
 
     /// <summary>
-    /// Create a new instance of RgbaPixelFormat.
+    /// Create a new instance of <see cref="RgbaPixelFormat"/>.
     /// </summary>
     public static RgbaPixelFormat NewBgra(
         int rbits,

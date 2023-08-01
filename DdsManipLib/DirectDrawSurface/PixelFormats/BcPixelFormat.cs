@@ -91,10 +91,34 @@ public class BcPixelFormat : PixelFormat, IEquatable<BcPixelFormat> {
                 for (var by = 0; by < bh; by++) {
                     for (var bx = 0; bx < bw; bx++) {
                         var pixel = decomp[by, bx];
-                        targetPixelFormat.R.EncodeByte(target[(targetStride * (y + by))..], Bpp * (x + bx), pixel.X);
-                        targetPixelFormat.G.EncodeByte(target[(targetStride * (y + by))..], Bpp * (x + bx), pixel.Y);
-                        targetPixelFormat.B.EncodeByte(target[(targetStride * (y + by))..], Bpp * (x + bx), pixel.Z);
-                        targetPixelFormat.A.EncodeByte(target[(targetStride * (y + by))..], Bpp * (x + bx), pixel.W);
+                        
+                        if (targetPixelFormat.R.Type is not (ChannelType.F32 or ChannelType.Sf16 or ChannelType.Uf16))
+                            targetPixelFormat.R.EncodeByte(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.X);
+                        else if (Type == ChannelType.Snorm)
+                            targetPixelFormat.R.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), (sbyte) pixel.X / 127f);
+                        else
+                            targetPixelFormat.R.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.X / 255f);
+
+                        if (targetPixelFormat.G.Type is not (ChannelType.F32 or ChannelType.Sf16 or ChannelType.Uf16))
+                            targetPixelFormat.G.EncodeByte(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.Y);
+                        else if (Type == ChannelType.Snorm)
+                            targetPixelFormat.G.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), (sbyte) pixel.Y / 127f);
+                        else
+                            targetPixelFormat.G.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.Y / 255f);
+
+                        if (targetPixelFormat.B.Type is not (ChannelType.F32 or ChannelType.Sf16 or ChannelType.Uf16))
+                            targetPixelFormat.B.EncodeByte(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.Z);
+                        else if (Type == ChannelType.Snorm)
+                            targetPixelFormat.B.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), (sbyte) pixel.Z / 127f);
+                        else
+                            targetPixelFormat.B.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.Z / 255f);
+
+                        if (targetPixelFormat.A.Type is not (ChannelType.F32 or ChannelType.Sf16 or ChannelType.Uf16))
+                            targetPixelFormat.A.EncodeByte(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.W);
+                        else if (Type == ChannelType.Snorm)
+                            targetPixelFormat.A.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), (sbyte) pixel.W / 127f);
+                        else
+                            targetPixelFormat.A.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.W / 255f);
                     }
                 }
 
@@ -132,8 +156,19 @@ public class BcPixelFormat : PixelFormat, IEquatable<BcPixelFormat> {
                 for (var by = 0; by < bh; by++) {
                     for (var bx = 0; bx < bw; bx++) {
                         var pixel = decomp[by, bx];
-                        targetPixelFormat.L.EncodeByte(target[(targetStride * (y + by))..], Bpp * (x + bx), pixel.X);
-                        targetPixelFormat.A.EncodeByte(target[(targetStride * (y + by))..], Bpp * (x + bx), pixel.Y);
+                        if (targetPixelFormat.L.Type is not (ChannelType.F32 or ChannelType.Sf16 or ChannelType.Uf16))
+                            targetPixelFormat.L.EncodeByte(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.X);
+                        else if (Type == ChannelType.Snorm)
+                            targetPixelFormat.L.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), (sbyte) pixel.X / 127f);
+                        else
+                            targetPixelFormat.L.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.X / 255f);
+                        
+                        if (targetPixelFormat.A.Type is not (ChannelType.F32 or ChannelType.Sf16 or ChannelType.Uf16))
+                            targetPixelFormat.A.EncodeByte(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.Y);
+                        else if (Type == ChannelType.Snorm)
+                            targetPixelFormat.A.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), (sbyte) pixel.Y / 127f);
+                        else
+                            targetPixelFormat.A.EncodeFloat(target[(targetStride * (y + by))..], targetPixelFormat.Bpp * (x + bx), pixel.Y / 255f);
                     }
                 }
 

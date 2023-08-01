@@ -56,10 +56,13 @@ internal readonly struct Bc7Mode {
         5 => new(5, 1, 0, 2, 0, 7, 8, 0, 0, 2, 2, 31, 31),
         6 => new(6, 1, 0, 0, 0, 7, 7, 1, 0, 4, 0, 63, 0),
         7 => new(7, 2, 6, 0, 0, 5, 5, 1, 0, 2, 0, 30, 0),
-        _ => new(0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        _ => default,
     };
 
     public static Bc7Mode GetFromFirstByte(byte firstByte) {
+        if (firstByte == 0)
+            return default;
+        
         var mode = 0;
         while (0 == (firstByte & (1 << mode)))
             mode++;
