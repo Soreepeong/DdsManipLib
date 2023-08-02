@@ -1,8 +1,8 @@
 ﻿using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
 
-namespace DdsManipLib.DirectDrawSurface.PixelFormats.PlainPixelFormats;
+namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 
-public interface IAlphaPlainPixelFormat : IPlainPixelFormat {
+public interface IAlphaPixelFormat : IPixelFormat {
     public IChannel? Alpha { get; }
     public AlphaType AlphaType { get; }
 }

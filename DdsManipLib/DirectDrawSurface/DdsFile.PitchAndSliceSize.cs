@@ -70,11 +70,11 @@ public partial class DdsFile
                 switch( HeaderDxt10.DxgiFormat )
                 {
                     case DxgiFormat.Bc1Typeless:
-                    case DxgiFormat.Bc1Unorm:
-                    case DxgiFormat.Bc1UnormSrgb:
+                    case DxgiFormat.Bc1UNorm:
+                    case DxgiFormat.Bc1UNormSrgb:
                     case DxgiFormat.Bc4Typeless:
-                    case DxgiFormat.Bc4Unorm:
-                    case DxgiFormat.Bc4Snorm:
+                    case DxgiFormat.Bc4UNorm:
+                    case DxgiFormat.Bc4SNorm:
                     {
                         var nbw = Math.Max( 1, ( w + 3 ) / 4 );
                         var nbh = Math.Max( 1, ( h + 3 ) / 4 );
@@ -83,20 +83,20 @@ public partial class DdsFile
                         return true;
                     }
                     case DxgiFormat.Bc2Typeless:
-                    case DxgiFormat.Bc2Unorm:
-                    case DxgiFormat.Bc2UnormSrgb:
+                    case DxgiFormat.Bc2UNorm:
+                    case DxgiFormat.Bc2UNormSrgb:
                     case DxgiFormat.Bc3Typeless:
-                    case DxgiFormat.Bc3Unorm:
-                    case DxgiFormat.Bc3UnormSrgb:
+                    case DxgiFormat.Bc3UNorm:
+                    case DxgiFormat.Bc3UNormSrgb:
                     case DxgiFormat.Bc5Typeless:
-                    case DxgiFormat.Bc5Unorm:
-                    case DxgiFormat.Bc5Snorm:
+                    case DxgiFormat.Bc5UNorm:
+                    case DxgiFormat.Bc5SNorm:
                     case DxgiFormat.Bc6HTypeless:
                     case DxgiFormat.Bc6HUf16:
                     case DxgiFormat.Bc6HSf16:
                     case DxgiFormat.Bc7Typeless:
-                    case DxgiFormat.Bc7Unorm:
-                    case DxgiFormat.Bc7UnormSrgb:
+                    case DxgiFormat.Bc7UNorm:
+                    case DxgiFormat.Bc7UNormSrgb:
                     {
                         var nbw = Math.Max( 1, ( w + 3 ) / 4 );
                         var nbh = Math.Max( 1, ( h + 3 ) / 4 );
@@ -104,8 +104,8 @@ public partial class DdsFile
                         sliceSize = pitch * nbh;
                         return true;
                     }
-                    case DxgiFormat.R8G8B8G8Unorm:
-                    case DxgiFormat.G8R8G8B8Unorm:
+                    case DxgiFormat.R8G8B8G8UNorm:
+                    case DxgiFormat.G8R8G8B8UNorm:
                     case DxgiFormat.Yuy2:
                         pitch = ( ( w + 1 ) >> 1 ) * 4;
                         sliceSize = pitch * h;
@@ -126,10 +126,10 @@ public partial class DdsFile
                     case DxgiFormat.P016:
                         if( h % 2 != 0 )
                             return false;
-                        goto case DxgiFormat.D16UnormS8Uint;
-                    case DxgiFormat.D16UnormS8Uint:
-                    case DxgiFormat.R16UnormX8Typeless:
-                    case DxgiFormat.X16TypelessG8Uint:
+                        goto case DxgiFormat.D16UNormS8UInt;
+                    case DxgiFormat.D16UNormS8UInt:
+                    case DxgiFormat.R16UNormX8Typeless:
+                    case DxgiFormat.X16TypelessG8UInt:
                         pitch = ( ( w + 1 ) >> 1 ) * 4;
                         sliceSize = pitch * ( h + ( ( h + 1 ) >> 1 ) );
                         return true;
@@ -153,105 +153,105 @@ public partial class DdsFile
                         return true;
                     case DxgiFormat.R32G32B32A32Typeless:
                     case DxgiFormat.R32G32B32A32Float:
-                    case DxgiFormat.R32G32B32A32Uint:
-                    case DxgiFormat.R32G32B32A32Sint:
+                    case DxgiFormat.R32G32B32A32UInt:
+                    case DxgiFormat.R32G32B32A32SInt:
                         bpp = 128;
                         break;
                     case DxgiFormat.R32G32B32Typeless:
                     case DxgiFormat.R32G32B32Float:
-                    case DxgiFormat.R32G32B32Uint:
-                    case DxgiFormat.R32G32B32Sint:
+                    case DxgiFormat.R32G32B32UInt:
+                    case DxgiFormat.R32G32B32SInt:
                         bpp = 96;
                         break;
                     case DxgiFormat.R16G16B16A16Typeless:
                     case DxgiFormat.R16G16B16A16Float:
-                    case DxgiFormat.R16G16B16A16Unorm:
-                    case DxgiFormat.R16G16B16A16Uint:
-                    case DxgiFormat.R16G16B16A16Snorm:
-                    case DxgiFormat.R16G16B16A16Sint:
+                    case DxgiFormat.R16G16B16A16UNorm:
+                    case DxgiFormat.R16G16B16A16UInt:
+                    case DxgiFormat.R16G16B16A16SNorm:
+                    case DxgiFormat.R16G16B16A16SInt:
                     case DxgiFormat.R32G32Typeless:
                     case DxgiFormat.R32G32Float:
-                    case DxgiFormat.R32G32Uint:
-                    case DxgiFormat.R32G32Sint:
+                    case DxgiFormat.R32G32UInt:
+                    case DxgiFormat.R32G32SInt:
                     case DxgiFormat.R32G8X24Typeless:
-                    case DxgiFormat.D32FloatS8X24Uint:
+                    case DxgiFormat.D32FloatS8X24UInt:
                     case DxgiFormat.R32FloatX8X24Typeless:
-                    case DxgiFormat.X32TypelessG8X24Uint:
+                    case DxgiFormat.X32TypelessG8X24UInt:
                     case DxgiFormat.Y416:
                         bpp = 64;
                         break;
                     case DxgiFormat.R10G10B10A2Typeless:
-                    case DxgiFormat.R10G10B10A2Unorm:
-                    case DxgiFormat.R10G10B10A2Uint:
+                    case DxgiFormat.R10G10B10A2UNorm:
+                    case DxgiFormat.R10G10B10A2UInt:
                     case DxgiFormat.R11G11B10Float:
                     case DxgiFormat.R8G8B8A8Typeless:
-                    case DxgiFormat.R8G8B8A8Unorm:
-                    case DxgiFormat.R8G8B8A8UnormSrgb:
-                    case DxgiFormat.R8G8B8A8Uint:
-                    case DxgiFormat.R8G8B8A8Snorm:
-                    case DxgiFormat.R8G8B8A8Sint:
+                    case DxgiFormat.R8G8B8A8UNorm:
+                    case DxgiFormat.R8G8B8A8UNormSrgb:
+                    case DxgiFormat.R8G8B8A8UInt:
+                    case DxgiFormat.R8G8B8A8SNorm:
+                    case DxgiFormat.R8G8B8A8SInt:
                     case DxgiFormat.R16G16Typeless:
                     case DxgiFormat.R16G16Float:
-                    case DxgiFormat.R16G16Unorm:
-                    case DxgiFormat.R16G16Uint:
-                    case DxgiFormat.R16G16Snorm:
-                    case DxgiFormat.R16G16Sint:
+                    case DxgiFormat.R16G16UNorm:
+                    case DxgiFormat.R16G16UInt:
+                    case DxgiFormat.R16G16SNorm:
+                    case DxgiFormat.R16G16SInt:
                     case DxgiFormat.R32Typeless:
                     case DxgiFormat.D32Float:
                     case DxgiFormat.R32Float:
-                    case DxgiFormat.R32Uint:
-                    case DxgiFormat.R32Sint:
+                    case DxgiFormat.R32UInt:
+                    case DxgiFormat.R32SInt:
                     case DxgiFormat.R24G8Typeless:
-                    case DxgiFormat.D24UnormS8Uint:
-                    case DxgiFormat.R24UnormX8Typeless:
-                    case DxgiFormat.X24TypelessG8Uint:
+                    case DxgiFormat.D24UNormS8UInt:
+                    case DxgiFormat.R24UNormX8Typeless:
+                    case DxgiFormat.X24TypelessG8UInt:
                     case DxgiFormat.R9G9B9E5Sharedexp:
-                    case DxgiFormat.B8G8R8A8Unorm:
-                    case DxgiFormat.B8G8R8X8Unorm:
-                    case DxgiFormat.R10G10B10XrBiasA2Unorm:
+                    case DxgiFormat.B8G8R8A8UNorm:
+                    case DxgiFormat.B8G8R8X8UNorm:
+                    case DxgiFormat.R10G10B10XrBiasA2UNorm:
                     case DxgiFormat.B8G8R8A8Typeless:
-                    case DxgiFormat.B8G8R8A8UnormSrgb:
+                    case DxgiFormat.B8G8R8A8UNormSrgb:
                     case DxgiFormat.B8G8R8X8Typeless:
-                    case DxgiFormat.B8G8R8X8UnormSrgb:
+                    case DxgiFormat.B8G8R8X8UNormSrgb:
                     case DxgiFormat.Ayuv:
                     case DxgiFormat.Y410:
                     case DxgiFormat.R10G10B10_7E3_A2Float:
                     case DxgiFormat.R10G10B10_6E4_A2Float:
-                    case DxgiFormat.R10G10B10SnormA2Unorm:
+                    case DxgiFormat.R10G10B10SNormA2UNorm:
                         bpp = 32;
                         break;
                     case DxgiFormat.R8G8Typeless:
-                    case DxgiFormat.R8G8Unorm:
-                    case DxgiFormat.R8G8Uint:
-                    case DxgiFormat.R8G8Snorm:
-                    case DxgiFormat.R8G8Sint:
+                    case DxgiFormat.R8G8UNorm:
+                    case DxgiFormat.R8G8UInt:
+                    case DxgiFormat.R8G8SNorm:
+                    case DxgiFormat.R8G8SInt:
                     case DxgiFormat.R16Typeless:
                     case DxgiFormat.R16Float:
-                    case DxgiFormat.D16Unorm:
-                    case DxgiFormat.R16Unorm:
-                    case DxgiFormat.R16Uint:
-                    case DxgiFormat.R16Snorm:
-                    case DxgiFormat.R16Sint:
-                    case DxgiFormat.B5G6R5Unorm:
-                    case DxgiFormat.B5G5R5A1Unorm:
+                    case DxgiFormat.D16UNorm:
+                    case DxgiFormat.R16UNorm:
+                    case DxgiFormat.R16UInt:
+                    case DxgiFormat.R16SNorm:
+                    case DxgiFormat.R16SInt:
+                    case DxgiFormat.B5G6R5UNorm:
+                    case DxgiFormat.B5G5R5A1UNorm:
                     case DxgiFormat.A8P8:
-                    case DxgiFormat.B4G4R4A4Unorm:
-                    case DxgiFormat.A4B4G4R4Unorm:
+                    case DxgiFormat.B4G4R4A4UNorm:
+                    case DxgiFormat.A4B4G4R4UNorm:
                         bpp = 16;
                         break;
                     case DxgiFormat.R8Typeless:
-                    case DxgiFormat.R8Unorm:
-                    case DxgiFormat.R8Uint:
-                    case DxgiFormat.R8Snorm:
-                    case DxgiFormat.R8Sint:
-                    case DxgiFormat.A8Unorm:
+                    case DxgiFormat.R8UNorm:
+                    case DxgiFormat.R8UInt:
+                    case DxgiFormat.R8SNorm:
+                    case DxgiFormat.R8SInt:
+                    case DxgiFormat.A8UNorm:
                     case DxgiFormat.Ai44:
                     case DxgiFormat.Ia44:
                     case DxgiFormat.P8:
-                    case DxgiFormat.R4G4Unorm:
+                    case DxgiFormat.R4G4UNorm:
                         bpp = 8;
                         break;
-                    case DxgiFormat.R1Unorm:
+                    case DxgiFormat.R1UNorm:
                         bpp = 1;
                         break;
                     default:

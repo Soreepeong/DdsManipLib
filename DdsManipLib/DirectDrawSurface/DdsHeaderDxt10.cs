@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
-using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 namespace DdsManipLib.DirectDrawSurface;
 
@@ -59,53 +57,5 @@ public struct DdsHeaderDxt10 {
         writer.Write((int) MiscFlag);
         writer.Write(ArraySize);
         writer.Write((int) MiscFlags2);
-    }
-
-    /// <summary>
-    /// Attempt to deduce a corresponding <see cref="PixelFormat"/>.
-    /// </summary>
-    /// <param name="pixelFormat">The resulting pixel format, or <see cref="UnknownPixelFormat"/> if not found.</param>
-    /// <returns>Whether the corresponding format has been found.</returns>
-    public bool TryToPixelFormat(out PixelFormat pixelFormat) {
-        pixelFormat = UnknownPixelFormat.Instance;
-        var dxt10AlphaMode = MiscFlags2 & DdsHeaderDxt10MiscFlags2.AlphaMask;
-        switch (dxt10AlphaMode) {
-            case DdsHeaderDxt10MiscFlags2.AlphaModeUnknown:
-            case DdsHeaderDxt10MiscFlags2.AlphaModeStraight:
-                pixelFormat = DxgiFormat.ToPixelFormat(AlphaType.Straight);
-                return true;
-            case DdsHeaderDxt10MiscFlags2.AlphaModePremultiplied:
-                pixelFormat = DxgiFormat.ToPixelFormat(AlphaType.Premultiplied);
-                return true;
-            case DdsHeaderDxt10MiscFlags2.AlphaModeOpaque:
-                pixelFormat = DxgiFormat.ToPixelFormat(AlphaType.None);
-                return true;
-            case DdsHeaderDxt10MiscFlags2.AlphaModeCustom:
-                pixelFormat = DxgiFormat.ToPixelFormat(AlphaType.Custom);
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    /// <summary>
-    /// Attempt to deduce the fields of this object from a <see cref="PixelFormat"/>.
-    /// </summary>
-    /// <param name="value">The value to convert from.</param>
-    /// <returns>Whether the corresponding format has been found.</returns>
-    public bool TryUpdateFromPixelFormat(PixelFormat value) {
-        var dxgi = value.ToDxgiFormat();
-        if (dxgi == DxgiFormat.Unknown)
-            return false;
-
-        DxgiFormat = dxgi;
-        MiscFlags2 = value.Alpha switch {
-            AlphaType.None => DdsHeaderDxt10MiscFlags2.AlphaModeOpaque,
-            AlphaType.Straight => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
-            AlphaType.Premultiplied => DdsHeaderDxt10MiscFlags2.AlphaModePremultiplied,
-            AlphaType.Custom => DdsHeaderDxt10MiscFlags2.AlphaModeCustom,
-            _ => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
-        };
-        return true;
     }
 }

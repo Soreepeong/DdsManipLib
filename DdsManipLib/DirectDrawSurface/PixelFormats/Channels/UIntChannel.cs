@@ -13,6 +13,12 @@ public readonly struct UIntChannel<T> : IUIntChannel<T>
     public int BitOffset { get; }
     public int BitCount { get; }
 
+    public T ReadValue(ReadOnlySpan<byte> span, int shift) =>
+        T.CreateSaturating(ChannelUtilities.ReadRawUInt32(span, BitOffset + shift, BitCount));
+
+    public void WriteValue(Span<byte> span, int shift, T value) =>
+        ChannelUtilities.WriteRawUInt32(span, BitOffset + shift, BitCount, uint.CreateSaturating(value));
+
     public bool Equals(UIntChannel<T> other) => BitOffset == other.BitOffset && BitCount == other.BitCount;
 
     public bool Equals(IChannel? other) => other is UIntChannel<T> r && Equals(r);

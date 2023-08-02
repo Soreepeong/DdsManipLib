@@ -6,9 +6,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
-using DdsManipLib.DirectDrawSurface.PixelFormats.PlainPixelFormats;
 
 namespace DdsManipLib.DirectDrawSurface;
 
@@ -104,72 +101,95 @@ public struct DdsPixelFormat {
     }
 
     /// <summary>
-    /// Set this object to indicate a FourCC.
+    /// Construct a new instance of <see cref="DdsPixelFormat" /> containing a FourCC.
     /// </summary>
-    public void SetFourCc(DdsFourCc fourCc) {
-        this = default;
-        Size = Unsafe.SizeOf<DdsPixelFormat>();
-        Flags = DdsPixelFormatFlags.FourCc;
-        FourCc = fourCc;
-    }
+    public static DdsPixelFormat FromFourCc(DdsFourCc fourCc) => new() {
+        Size = Unsafe.SizeOf<DdsPixelFormat>(),
+        Flags = DdsPixelFormatFlags.FourCc,
+        FourCc = fourCc,
+    };
 
     /// <summary>
-    /// Set this object to indicate an alpha channel.
+    /// Construct a new instance of <see cref="DdsPixelFormat" /> containing an alpha channel.
     /// </summary>
-    public void SetAlpha(int nbits, uint amask) {
-        if (nbits is < 0 or > 32)
-            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
-        this = default;
-        Size = Unsafe.SizeOf<DdsPixelFormat>();
-        RgbBitCount = nbits;
-        Flags = DdsPixelFormatFlags.Alpha | DdsPixelFormatFlags.AlphaPixels;
-        ABitMask = amask;
-    }
+    public static DdsPixelFormat FromAlpha(int nbits, uint amask = 0u) => new() {
+        Size = Unsafe.SizeOf<DdsPixelFormat>(),
+        RgbBitCount = nbits is > 0 and <= 32 ? nbits : throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null),
+        Flags = DdsPixelFormatFlags.Alpha | DdsPixelFormatFlags.AlphaPixels,
+        ABitMask = amask != 0u ? amask : throw new ArgumentOutOfRangeException(nameof(amask), amask, null),
+    };
 
     /// <summary>
-    /// Set this object to indicate RGB(A) channels.
+    /// Construct a new instance of <see cref="DdsPixelFormat" /> containing RGB channels, optionally with an alpha channel.
     /// </summary>
-    public void SetBgra(int nbits, uint bmask, uint gmask, uint rmask, uint amask) {
-        if (nbits is < 0 or > 32)
-            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
-        this = default;
-        Size = Unsafe.SizeOf<DdsPixelFormat>();
-        RgbBitCount = nbits;
-        Flags = DdsPixelFormatFlags.Rgb | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels);
-        BBitMask = bmask;
-        GBitMask = gmask;
-        RBitMask = rmask;
-        ABitMask = amask;
-    }
+    public static DdsPixelFormat FromRgba(int nbits, uint rmask, uint gmask, uint bmask, uint amask = 0u) => new() {
+        Size = Unsafe.SizeOf<DdsPixelFormat>(),
+        RgbBitCount = nbits is > 0 and <= 32 ? nbits : throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null),
+        Flags = DdsPixelFormatFlags.Rgb | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels),
+        RBitMask = rmask,
+        GBitMask = gmask,
+        BBitMask = bmask,
+        ABitMask = amask,
+    };
 
     /// <summary>
-    /// Set this object to indicate a luminance channel, and optionally with an alpha channel.
+    /// Construct a new instance of <see cref="DdsPixelFormat" /> containing a luminance channel, optionally with an alpha channel.
     /// </summary>
-    public void SetLuminance(int nbits, uint lmask, uint amask) {
-        if (nbits is < 0 or > 32)
-            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
-        this = default;
-        Size = Unsafe.SizeOf<DdsPixelFormat>();
-        RgbBitCount = nbits;
-        Flags = DdsPixelFormatFlags.Luminance | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels);
-        RBitMask = lmask;
-        ABitMask = amask;
-    }
+    public static DdsPixelFormat WithLuminance(int nbits, uint lmask, uint amask = 0u) => new() {
+        Size = Unsafe.SizeOf<DdsPixelFormat>(),
+        RgbBitCount = nbits is > 0 and <= 32 ? nbits : throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null),
+        Flags = DdsPixelFormatFlags.Luminance | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels),
+        RBitMask = lmask != 0u ? lmask : throw new ArgumentOutOfRangeException(nameof(lmask), lmask, null),
+        ABitMask = amask,
+    };
 
     /// <summary>
-    /// Set this object to indicate YUV(A) channels.
+    /// Construct a new instance of <see cref="DdsPixelFormat" /> containing YUV channels, optionally with an alpha channel.
     /// </summary>
-    public void SetYuv(int nbits, uint ymask, uint umask, uint vmask, uint amask) {
-        if (nbits is < 0 or > 32)
-            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
-        this = default;
-        Size = Unsafe.SizeOf<DdsPixelFormat>();
-        RgbBitCount = nbits;
-        Flags = DdsPixelFormatFlags.Yuv | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels);
-        BBitMask = vmask;
-        GBitMask = umask;
-        RBitMask = ymask;
-        ABitMask = amask;
+    public static DdsPixelFormat FromYuv(int nbits, uint ymask, uint umask, uint vmask, uint amask = 0u) => new() {
+        Size = Unsafe.SizeOf<DdsPixelFormat>(),
+        RgbBitCount = nbits is > 0 and <= 32 ? nbits : throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null),
+        Flags = DdsPixelFormatFlags.Yuv | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels),
+        RBitMask = ymask,
+        GBitMask = umask,
+        BBitMask = vmask,
+        ABitMask = amask,
+    };
+
+    /// <summary>
+    /// Construct a new instance of <see cref="DdsPixelFormat" /> from a <see cref="IPixelFormat"/>.
+    /// </summary>
+    public static bool TryFromPixelFormat(IPixelFormat value, out DdsPixelFormat ddspf) {
+        if (Enum.GetNames<DdsFourCc>()
+                .FirstOrDefault(x => value.Equals(typeof(DdsFourCc).GetField(x)?.GetCustomAttribute<PixelFormat>())) is { } fourCcName) {
+            ddspf = FromFourCc(Enum.Parse<DdsFourCc>(fourCcName));
+            return true;
+        }
+
+        if (value.Bpp is < 0 or > 32) {
+            ddspf = default;
+            return false;
+        }
+
+        switch (value) {
+            case RgbaxxPixelFormat {X2: null} rgbaxx:
+                ddspf = FromRgba(
+                    value.Bpp,
+                    rgbaxx.Red?.BitMask32Shifted ?? 0u,
+                    rgbaxx.Green?.BitMask32Shifted ?? 0u,
+                    rgbaxx.Blue?.BitMask32Shifted ?? 0u,
+                    rgbaxx.Alpha?.BitMask32Shifted ?? 0u);
+                return true;
+            case LaxPixelFormat lax:
+                ddspf = WithLuminance(lax.Bpp, lax.Luminance.BitMask32Shifted, lax.Alpha?.BitMask32Shifted ?? 0u);
+                return true;
+            case AxPixelFormat ax:
+                ddspf = FromAlpha(ax.Bpp, ax.Alpha.BitMask32Shifted);
+                return true;
+            default:
+                ddspf = default;
+                return false;
+        }
     }
 
     /// <summary>
@@ -180,72 +200,31 @@ public struct DdsPixelFormat {
     public bool TryUpdateFromPixelFormat(IPixelFormat value) {
         if (Enum.GetNames<DdsFourCc>()
                 .FirstOrDefault(x => value.Equals(typeof(DdsFourCc).GetField(x)?.GetCustomAttribute<PixelFormat>())) is { } fourCcName) {
-            SetFourCc(Enum.Parse<DdsFourCc>(fourCcName));
+            this = FromFourCc(Enum.Parse<DdsFourCc>(fourCcName));
             return true;
         }
-        
+
         if (value.Bpp is < 0 or > 32)
             return false;
 
-        if (value is RgbaxxPixelFormat rgbaxx) {
-            if (rgbaxx.X2 is not null)
+        switch (value) {
+            case RgbaxxPixelFormat {X2: null} rgbaxx:
+                this = FromRgba(
+                    value.Bpp,
+                    rgbaxx.Red?.BitMask32Shifted ?? 0u,
+                    rgbaxx.Green?.BitMask32Shifted ?? 0u,
+                    rgbaxx.Blue?.BitMask32Shifted ?? 0u,
+                    rgbaxx.Alpha?.BitMask32Shifted ?? 0u);
+                return true;
+            case LaxPixelFormat lax:
+                this = WithLuminance(lax.Bpp, lax.Luminance.BitMask32Shifted, lax.Alpha?.BitMask32Shifted ?? 0u);
+                return true;
+            case AxPixelFormat ax:
+                this = FromAlpha(ax.Bpp, ax.Alpha.BitMask32Shifted);
+                return true;
+            default:
                 return false;
-            SetBgra(
-                value.Bpp,
-                rgbaxx.Red?.BitMask32Shifted ?? 0u,
-                rgbaxx.Green?.BitMask32Shifted ?? 0u,
-                rgbaxx.Blue?.BitMask32Shifted ?? 0u, 
-                rgbaxx.Alpha?.BitMask32Shifted ?? 0u);
-            return true;
         }
-        
-        if (value is not IPlainPixelFormat)
-            return false;
-
-        if (value is IX2PlainPixelFormat)
-            return false;
-
-        var r = value as IRedPlainPixelFormat;
-        var g = value as IGreenPlainPixelFormat;
-        var b = value as IBluePlainPixelFormat;
-        var a = value as IAlphaPlainPixelFormat;
-        var l = value as ILuminancePlainPixelFormat;
-        var yuv = value as IYuvPlainPixelFormat;
-        var x1 = value as IX1PlainPixelFormat;
-
-        if (r is not null || g is not null || b is not null) {
-            if (l is not null || yuv is not null)
-                return false;
-            SetBgra(
-                value.Bpp,
-                r?.Red.BitMask32Shifted ?? 0u,
-                g?.Green.BitMask32Shifted ?? 0u,
-                b?.Blue.BitMask32Shifted ?? 0u, 
-                a?.Alpha.BitMask32Shifted ?? 0u);
-            return true;
-        }
-
-        if (yuv is not null) {
-            SetYuv(
-                value.Bpp,
-                yuv.Luminance.BitMask32Shifted,
-                yuv.ChromaBlue.BitMask32Shifted,
-                yuv.ChromaRed.BitMask32Shifted, 
-                a?.Alpha.BitMask32Shifted ?? 0u);
-            return true;
-        }
-
-        if (l is not null) {
-            SetLuminance(value.Bpp, l.Luminance.BitMask32Shifted, a?.Alpha.BitMask32Shifted ?? 0u);
-            return true;
-        }
-
-        if (a is not null) {
-            SetAlpha(value.Bpp, a.Alpha.BitMask32Shifted);
-            return true;
-        }
-
-        return false;
     }
 
     /// <summary>
@@ -256,69 +235,49 @@ public struct DdsPixelFormat {
     public bool TryGetPixelFormat([MaybeNullWhen(false)] out IPixelFormat pixelFormat) {
         pixelFormat = null;
 
-        if (!Flags.HasFlag(DdsPixelFormatFlags.FourCc)) {
-            var alpha = new ChannelDefinition();
-            
-            var am = Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ABitMask : 0u;
-            if (Flags.HasFlag(DdsPixelFormatFlags.Rgb)) {
-                var xbitmask =
-                    unchecked((1u << RgbBitCount) - 1u) & ~(RBitMask | GBitMask | BBitMask) &
-                    (Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ~ABitMask : ~0u);
+        if (Flags.HasFlag(DdsPixelFormatFlags.FourCc)) {
+            if (Enum.GetName(FourCc) is not { } name)
+                return false;
+            if (typeof(DdsFourCc).GetField(name)?.GetCustomAttribute<PixelFormat>() is not { } pf)
+                return false;
 
-                var rm = RBitMask;
-                var gm = GBitMask;
-                var bm = BBitMask;
-                var xm = 0xFFFFFFFFu & ~(am | rm | gm | bm);
-
-                    pixelFormat = new RgbaPixelFormat(
-                    alpha.IsEmpty ? AlphaType.None : AlphaType.Straight,
-                    r: ChannelDefinition.FromMask(ChannelType.Unorm, RBitMask),
-                    g: ChannelDefinition.FromMask(ChannelType.Unorm, GBitMask),
-                    b: ChannelDefinition.FromMask(ChannelType.Unorm, BBitMask),
-                    a: alpha,
-                    x1: ChannelDefinition.FromMask(ChannelType.Typeless, xbitmask));
-                return true;
-            }
-
-            if (Flags.HasFlag(DdsPixelFormatFlags.Yuv)) {
-                var xbitmask =
-                    unchecked((1u << RgbBitCount) - 1u) & ~(RBitMask | GBitMask | BBitMask) &
-                    (Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ~ABitMask : ~0u);
-                pixelFormat = new YuvPixelFormat(
-                    alpha.IsEmpty ? AlphaType.None : AlphaType.Straight,
-                    y: ChannelDefinition.FromMask(ChannelType.Unorm, RBitMask),
-                    u: ChannelDefinition.FromMask(ChannelType.Unorm, GBitMask),
-                    v: ChannelDefinition.FromMask(ChannelType.Unorm, BBitMask),
-                    a: alpha,
-                    x: ChannelDefinition.FromMask(ChannelType.Typeless, xbitmask));
-                return true;
-            }
-
-            if (Flags.HasFlag(DdsPixelFormatFlags.Luminance)) {
-                var xbitmask =
-                    unchecked((1u << RgbBitCount) - 1u) & ~RBitMask &
-                    (Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ~ABitMask : ~0u);
-                pixelFormat = new LumiPixelFormat(
-                    alpha.IsEmpty ? AlphaType.None : AlphaType.Straight,
-                    l: ChannelDefinition.FromMask(ChannelType.Unorm, RBitMask),
-                    a: alpha,
-                    x: ChannelDefinition.FromMask(ChannelType.Typeless, xbitmask));
-                return true;
-            }
-
-            if (Flags.HasFlag(DdsPixelFormatFlags.Alpha)) {
-                var xbitmask = unchecked((1u << RgbBitCount) - 1u) & ~ABitMask;
-                pixelFormat = new RgbaPixelFormat(
-                    AlphaType.Straight,
-                    a: alpha,
-                    x1: ChannelDefinition.FromMask(ChannelType.Typeless, xbitmask));
-                return true;
-            }
-
-            return false;
+            pixelFormat = pf;
+            return true;
         }
 
-        pixelFormat = FourCc.ToPixelFormat();
-        return !Equals(pixelFormat, UnknownPixelFormat.Instance);
+        if (Flags.HasFlag(DdsPixelFormatFlags.Rgb)) {
+            pixelFormat = RgbaxxPixelFormat.FromRgbaMask(
+                RgbBitCount,
+                RBitMask,
+                GBitMask,
+                BBitMask,
+                Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ABitMask : 0u);
+            return true;
+        }
+
+        if (Flags.HasFlag(DdsPixelFormatFlags.Yuv)) {
+            pixelFormat = YuvaxPixelFormat.FromYuvaMask(
+                RgbBitCount,
+                RBitMask,
+                GBitMask,
+                BBitMask,
+                Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ABitMask : 0u);
+            return true;
+        }
+
+        if (Flags.HasFlag(DdsPixelFormatFlags.Luminance)) {
+            pixelFormat = LaxPixelFormat.FromLaMask(
+                RgbBitCount,
+                RBitMask,
+                Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ABitMask : 0u);
+            return true;
+        }
+
+        if (Flags.HasFlag(DdsPixelFormatFlags.Alpha)) {
+            pixelFormat = AxPixelFormat.FromAMask(RgbBitCount, ABitMask);
+            return true;
+        }
+
+        return false;
     }
 }

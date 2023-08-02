@@ -1,11 +1,9 @@
 ﻿using System;
 using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
-using DdsManipLib.DirectDrawSurface.PixelFormats.PlainPixelFormats;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.DepthPixelFormats;
 
-public class DepthPixelFormat<T>
-    : PlainPixelFormat, IDepthPlainPixelFormat
+public class DepthPixelFormat<T> : RawPixelFormat
     where T : unmanaged, IChannel {
     public DepthPixelFormat(int depth) {
         Depth = (IChannel) Activator.CreateInstance(typeof(T), 0, depth)!;

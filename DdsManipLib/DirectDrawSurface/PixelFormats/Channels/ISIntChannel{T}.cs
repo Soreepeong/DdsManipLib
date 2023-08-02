@@ -6,20 +6,15 @@ namespace DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
 
 public interface ISIntChannel<T> : ISIntChannel, IChannel<T>
     where T : unmanaged, ISignedNumber<T>, IBinaryInteger<T>, IBinaryNumber<T>, IMinMaxValue<T> {
-    T IChannel<T>.ReadValue(ReadOnlySpan<byte> span, int shift) {
-        var n = ReadRawUInt32(span, shift);
-        return (n & (1 << (BitCount - 1))) == 0
-            ? T.CreateSaturating(n)
-            : -T.CreateSaturating((~n + 1) & ((1u << BitCount) - 1));
-    }
 
-    void IChannel<T>.WriteValue(Span<byte> span, int shift, T value) {
-        if (T.Sign(value) >= 0) {
-            WriteRawUInt32(span, shift, Math.Min(uint.CreateSaturating(value), 1u << (BitCount - 1)) - 1u);
-        } else {
-            var n = -int.CreateSaturating(value);
-            Debug.Assert(n > 0);
-            WriteRawUInt32(span, shift, (uint) n | (1u << (BitCount - 1)));
-        }
+    public void CopyPixelToInt<T2>(ReadOnlySpan<byte> source, int sourceShift, IChannel<T2> targetChannel, Span<byte> target, int targetShift)
+        where T2 : unmanaged, IBinaryInteger<T2>, IBinaryNumber<T2>, IMinMaxValue<T2> {
+        targetChannel.WriteValue(target, targetShift, T2.CreateSaturating(ReadValue(source, sourceShift)));
+    }
+    
+    public void CopyPixelToUNorm<T2>(ReadOnlySpan<byte> source, int sourceShift, IChannel<T2> targetChannel, Span<byte> target, int targetShift)
+        where T2 : unmanaged, IUnsignedNumber<T2>, IBinaryInteger<T2>, IBinaryNumber<T2>, IMinMaxValue<T2> {
+        var v = ReadValue(source, sourceShift);
+        targetChannel.WriteValue(target, targetShift, T2.CreateSaturating(v));
     }
 }

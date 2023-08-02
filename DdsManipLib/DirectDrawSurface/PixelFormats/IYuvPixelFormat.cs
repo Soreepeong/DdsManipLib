@@ -1,8 +1,8 @@
 ﻿using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
 
-namespace DdsManipLib.DirectDrawSurface.PixelFormats.PlainPixelFormats;
+namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 
-public interface IYuvPlainPixelFormat : ILuminancePlainPixelFormat {
+public interface IYuvPixelFormat : ILuminancePixelFormat {
     public IChannel? ChromaBlue { get; }
     public IChannel? ChromaRed { get; }
 }

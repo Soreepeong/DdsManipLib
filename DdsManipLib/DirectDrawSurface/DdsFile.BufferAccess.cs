@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 namespace DdsManipLib.DirectDrawSurface;
 
@@ -22,16 +20,7 @@ public partial class DdsFile {
     /// </summary>
     /// <param name="mipmapIndex">Index of the mipmap.</param>
     /// <returns>Number of bytes.</returns>
-    public int SliceSize(int mipmapIndex) {
-        var pf = PixelFormat;
-        if (pf is BcPixelFormat bcPixelFormat) {
-            return Math.Max(1, (Width(mipmapIndex) + 3) / 4) *
-                Math.Max(1, (Height(mipmapIndex) + 3) / 4) *
-                bcPixelFormat.BlockSize;
-        }
-
-        return Pitch(mipmapIndex) * Height(mipmapIndex);
-    }
+    public int SliceSize(int mipmapIndex) => PixelFormat.CalculateLinearSize(Width(mipmapIndex), Height(mipmapIndex));
 
     /// <summary>
     /// Get the number of bytes occupied by the specified mipmap in this file.

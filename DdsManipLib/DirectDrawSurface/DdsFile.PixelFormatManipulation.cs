@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 namespace DdsManipLib.DirectDrawSurface;
 
@@ -11,11 +10,11 @@ public partial class DdsFile {
     /// </summary>
     /// <param name="pixelFormat">The resulting pixel format, or <see cref="UnknownPixelFormat"/> if not found.</param>
     /// <returns>Whether the corresponding format has been found.</returns>
-    public bool TryDeducePixelFormat(out PixelFormat pixelFormat) {
+    public bool TryDeducePixelFormat([MaybeNullWhen(false)] out IPixelFormat pixelFormat) {
         if (Header.PixelFormat.TryGetPixelFormat(out pixelFormat))
             return true;
 
-        return UseDxt10Header && HeaderDxt10.TryToPixelFormat(out pixelFormat);
+        return UseDxt10Header && HeaderDxt10.DxgiFormat.TryGetPixelFormat(out pixelFormat);
     }
 
     /// <summary>
@@ -41,7 +40,7 @@ public partial class DdsFile {
             return true;
         }
 
-        if (enableDxt10HeaderFormat && pixelFormat.ToDxgiFormat() != DxgiFormat.Unknown) {
+        if (enableDxt10HeaderFormat && pixelFormat.TryGetDxgiFormat(out _)) {
             Header.PitchOrLinearSize = newPitchOrLinearSize;
             Header.Flags = newFlags;
             EnableDxt10Header(pixelFormat);
@@ -54,7 +53,7 @@ public partial class DdsFile {
     /// <summary>
     /// Get or set the associated <see cref="PixelFormat"/> for this file.
     /// </summary>
-    public PixelFormat PixelFormat => TryDeducePixelFormat(out var pf) ? pf : UnknownPixelFormat.Instance;
+    public IPixelFormat? PixelFormat => TryDeducePixelFormat(out var pf) ? pf : null;
 
     /// <summary>
     /// Whether the pixel format indicates empty value. 
@@ -84,10 +83,11 @@ public partial class DdsFile {
         byte[]? tmp = null;
         foreach (var slice in EnumerateSlices()) {
             switch (sourcePixelFormat) {
-                case var _ when sourcePixelFormat == targetPixelFormat:
+                case var _ when Equals(sourcePixelFormat, targetPixelFormat):
                     SliceSpan(slice.Image, slice.Face, slice.Mipmap, slice.Slice)
                         .CopyTo(target.SliceSpan(slice.Image, slice.Face, slice.Mipmap, slice.Slice));
                     break;
+                case RawPixelFormat rawS:
                 case RgbaPixelFormat rgbaS:
                     switch (targetPixelFormat) {
                         case RgbaPixelFormat rgbaT:

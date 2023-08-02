@@ -4,7 +4,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 using DdsManipLib.Utilities;
 
 namespace DdsManipLib.DirectDrawSurface;
@@ -56,7 +55,7 @@ public partial class DdsFile : ICloneable {
         pixelFormat ??= PixelFormat;
         // Note: set Header.PixelFormat later so that the values are taken from non-DXT10 headers.
         HeaderDxt10 = new() {
-            DxgiFormat = pixelFormat.ToDxgiFormat(),
+            DxgiFormat = pixelFormat.TryGetDxgiFormat(out var dxgiFormat) ? dxgiFormat : DxgiFormat.Unknown,
             ResourceDimension = Is1D
                 ? DdsHeaderDxt10ResourceDimension.Texture1D
                 : Is3D
@@ -64,13 +63,15 @@ public partial class DdsFile : ICloneable {
                     : DdsHeaderDxt10ResourceDimension.Texture2D,
             MiscFlag = IsCubeMap ? DdsHeaderDxt10MiscFlags.TextureCube : 0,
             ArraySize = NumImages,
-            MiscFlags2 = pixelFormat.Alpha switch {
-                AlphaType.None => DdsHeaderDxt10MiscFlags2.AlphaModeOpaque,
-                AlphaType.Straight => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
-                AlphaType.Premultiplied => DdsHeaderDxt10MiscFlags2.AlphaModePremultiplied,
-                AlphaType.Custom => DdsHeaderDxt10MiscFlags2.AlphaModeCustom,
-                _ => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
-            },
+            MiscFlags2 = pixelFormat is not IAlphaPixelFormat apf
+                ? DdsHeaderDxt10MiscFlags2.AlphaModeOpaque
+                : apf.AlphaType switch {
+                    AlphaType.None => DdsHeaderDxt10MiscFlags2.AlphaModeOpaque,
+                    AlphaType.Straight => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
+                    AlphaType.Premultiplied => DdsHeaderDxt10MiscFlags2.AlphaModePremultiplied,
+                    AlphaType.Custom => DdsHeaderDxt10MiscFlags2.AlphaModeCustom,
+                    _ => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
+                },
         };
         Header.PixelFormat = new() {
             Size = Unsafe.SizeOf<DdsPixelFormat>(),
@@ -230,29 +231,7 @@ public partial class DdsFile : ICloneable {
     /// </summary>
     /// <param name="mipmapIndex">Index of the mipmap.</param>
     /// <returns>Pitch(stride) of the mipmap.</returns>
-    public int Pitch(int mipmapIndex) {
-        var pf = PixelFormat;
-        if (pf is BcPixelFormat bcPixelFormat)
-            return Math.Max(1, (Width(mipmapIndex) + 3) / 4) * 4 * bcPixelFormat.Bpp;
-
-        // For R8G8_B8G8, G8R8_G8B8, legacy UYVY-packed, and legacy YUY2-packed formats, compute the pitch as:
-        switch (Header.PixelFormat.FourCc) {
-            case DdsFourCc.D3dFmtR8G8B8G8:
-            case DdsFourCc.D3dFmtG8R8G8B8:
-            case DdsFourCc.D3dFmtUyvy:
-            case DdsFourCc.D3dFmtYuy2:
-                return ((Width(mipmapIndex) + 1) >> 1) * 4;
-        }
-
-        switch (pf.DxgiFormat) {
-            case DxgiFormat.R8G8B8G8Unorm:
-            case DxgiFormat.G8R8G8B8Unorm:
-            case DxgiFormat.Yuy2:
-                return ((Width(mipmapIndex) + 1) >> 1) * 4;
-        }
-
-        return (Width(mipmapIndex) * pf.Bpp + 7) / 8;
-    }
+    public int Pitch(int mipmapIndex) => PixelFormat.CalculatePitch(Width(mipmapIndex));
 
     /// <summary>
     /// Get the height of the specified mipmap in this file.

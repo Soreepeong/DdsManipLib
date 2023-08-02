@@ -8,4 +8,16 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Compile Remove="DirectDrawSurface\PixelFormats\Old\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="DirectDrawSurface\PixelFormats\Old\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="DirectDrawSurface\PixelFormats\Old\**" />
+    </ItemGroup>
+
 </Project>

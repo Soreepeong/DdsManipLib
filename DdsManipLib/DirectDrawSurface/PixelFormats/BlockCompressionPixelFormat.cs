@@ -1,12 +1,11 @@
 ﻿using System;
 using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
-using DdsManipLib.DirectDrawSurface.PixelFormats.PlainPixelFormats;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 
 public abstract class BlockCompressionPixelFormat : PixelFormat {
     protected BlockCompressionPixelFormat(int version, int blockByteCount, int bpp, RgbaxxPixelFormat pixelFormat) {
-        AlphaType = pixelFormat is IAlphaPlainPixelFormat iacs ? iacs.AlphaType : AlphaType.None;
+        AlphaType = pixelFormat is IAlphaPixelFormat iacs ? iacs.AlphaType : AlphaType.None;
         Version = version;
         BlockByteCount = blockByteCount;
         Bpp = bpp;

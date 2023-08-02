@@ -3,8 +3,7 @@ using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.DepthPixelFormats;
 
-public class DepthStencilPixelFormat<TDepth, TStencil>
-    : DepthPixelFormat<TDepth>
+public class DepthStencilPixelFormat<TDepth, TStencil> : DepthPixelFormat<TDepth>
     where TDepth : unmanaged, IChannel
     where TStencil : unmanaged, IChannel {
     public DepthStencilPixelFormat(int depth, int stencil) : base(depth) {

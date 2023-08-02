@@ -1,11 +1,10 @@
 ﻿using System;
 using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
-using DdsManipLib.DirectDrawSurface.PixelFormats.PlainPixelFormats;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.DepthPixelFormats;
 
 public class DsxPixelFormat<TDepth, TStencil, TX>
-    : DepthStencilPixelFormat<TDepth, TStencil>, IX1PlainPixelFormat
+    : DepthStencilPixelFormat<TDepth, TStencil>, IX1PixelFormat
     where TDepth : unmanaged, IChannel
     where TStencil : unmanaged, IChannel
     where TX : unmanaged, IChannel {

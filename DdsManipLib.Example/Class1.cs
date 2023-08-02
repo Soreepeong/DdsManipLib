@@ -7,7 +7,7 @@ namespace DdsManipLib.Example;
 
 public static class Class1 {
     public static int Main(string[] args) {
-        var ddsf = DdsFile.FromFile(@"Z:\test\v01_m0361b0001_n.bc7_pdn.dds");
+        var ddsf = DdsFile.FromFile(@"Z:\test\v02_m0361b0001_n.dds");
         ddsf.ConvertTo(RgbaPixelFormat.NewRgba(16, 16, 16, 16, 0, 0, ChannelType.F16, AlphaType.Straight)).WriteToFile(@"Z:\test\rgbaf16.dds");
         ddsf.ConvertTo(RgbaPixelFormat.NewRgba(32, 32, 32, 32, 0, 0, ChannelType.F32, AlphaType.Straight)).WriteToFile(@"Z:\test\rgbaf32.dds");
         ddsf.ConvertTo(RgbaPixelFormat.NewBgra(8, 8, 8, 8, 0, 0, ChannelType.Unorm, AlphaType.Straight)).WriteToFile(@"Z:\test\rgba8888u.dds");

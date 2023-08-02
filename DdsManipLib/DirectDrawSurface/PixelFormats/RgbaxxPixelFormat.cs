@@ -1,10 +1,9 @@
 using System;
 using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
-using DdsManipLib.DirectDrawSurface.PixelFormats.PlainPixelFormats;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 
-public class RgbaxxPixelFormat : PlainPixelFormat, IRgbPlainPixelFormat, IAlphaPlainPixelFormat, IX2PlainPixelFormat {
+public class RgbaxxPixelFormat : RawPixelFormat, IRgbPixelFormat, IAlphaPixelFormat, IX2PixelFormat {
     public IChannel? Red { get; }
     public IChannel? Green { get; }
     public IChannel? Blue { get; }
@@ -49,6 +48,53 @@ public class RgbaxxPixelFormat : PlainPixelFormat, IRgbPlainPixelFormat, IAlphaP
             && Equals(X1, r.X1)
             && Equals(X2, r.X2)
             && Equals(AlphaType, r.AlphaType);
+
+    public void Copy(ReadOnlySpan<byte> source, int width, int height, RgbaxxPixelFormat targetPixelFormat, Span<byte> target) {
+        source = source[..CalculateLinearSize(width, height)];
+        if (Equals(targetPixelFormat)) {
+            source.CopyTo(target);
+            return;
+        }
+
+        var sourcePitch = CalculatePitch(width);
+        var targetPitch = targetPixelFormat.CalculatePitch(width);
+        var rconv = Red?.GetCopyPixelDelegate(targetPixelFormat.Red);
+        var gconv = Green?.GetCopyPixelDelegate(targetPixelFormat.Green);
+        var bconv = Blue?.GetCopyPixelDelegate(targetPixelFormat.Blue);
+        var aconv = Alpha?.GetCopyPixelDelegate(targetPixelFormat.Alpha);
+        var x1conv = X1?.GetCopyPixelDelegate(targetPixelFormat.X1);
+        var x2conv = X2?.GetCopyPixelDelegate(targetPixelFormat.X2);
+        for (var y = 0; y < height; y++) {
+            var sourceShift = 0;
+            var targetShift = 0;
+            for (var x = 0; x < width; x++) {
+                rconv?.Invoke(source, sourceShift, target, targetShift);
+                gconv?.Invoke(source, sourceShift, target, targetShift);
+                bconv?.Invoke(source, sourceShift, target, targetShift);
+                aconv?.Invoke(source, sourceShift, target, targetShift);
+                x1conv?.Invoke(source, sourceShift, target, targetShift);
+                x2conv?.Invoke(source, sourceShift, target, targetShift);
+                sourceShift += Bpp;
+                targetShift += targetPixelFormat.Bpp;
+            }
+            source = source[sourcePitch..];
+            target = target[targetPitch..];
+        }
+    }
+
+    public static RgbaxxPixelFormat FromRgbaMask(int nbits, uint rm, uint gm, uint bm, uint am, AlphaType alphaType = AlphaType.Straight) {
+        if (nbits is < 0 or > 32)
+            throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null);
+        
+        var xm = ((1u << nbits) - 1u) & ~(am | rm | gm | bm);
+        return new(
+            red: UNormChannel.FromMask(rm),
+            green: UNormChannel.FromMask(gm),
+            blue: UNormChannel.FromMask(bm),
+            alpha: UNormChannel.FromMask(am),
+            alphaType: am == 0u ? AlphaType.None : alphaType,
+            x1: TypelessChannel.FromMask(xm));
+    }
 
     public static class Presets {
         public class R<T> : RgbaxxPixelFormat
