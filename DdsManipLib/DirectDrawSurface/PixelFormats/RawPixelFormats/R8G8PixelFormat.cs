@@ -9,7 +9,7 @@ public abstract class R8G8PixelFormat : RawRgPixelFormat, IRawRgAlignedBytePixel
     public override int BitsPerPixel => 16;
     public override int BytesPerPixel => 2;
     protected R8G8PixelFormat() : base(AlphaType.None) { }
-    
+
     int IRawRAlignedBytePixelFormat.OffsetR => OffsetR;
     int IRawRgAlignedBytePixelFormat.OffsetG => OffsetG;
 }

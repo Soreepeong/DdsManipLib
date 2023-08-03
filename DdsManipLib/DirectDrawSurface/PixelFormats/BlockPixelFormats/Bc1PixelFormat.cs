@@ -13,7 +13,7 @@ public abstract class Bc1PixelFormat : BlockPixelFormat {
     public override int CalculatePitch(int width) => Math.Max((width + 3) / 4, 1) * 8;
     public override int CalculateLinearSize(int width, int height) => Math.Max((width + 3) / 4, 1) * Math.Max((height + 3) / 4, 1) * 8;
     public override bool SupportsRawPixelFormat(IRawPixelFormat rawpf) => rawpf is IRawRAlignedBytePixelFormat;
-    
+
     public override void Decompress(IRawPixelFormat rawPixelFormat, ReadOnlySpan<byte> sourceSpan, int width, int height, Span<byte> targetSpan) {
         Squish.DecompressImage(
             targetSpan,

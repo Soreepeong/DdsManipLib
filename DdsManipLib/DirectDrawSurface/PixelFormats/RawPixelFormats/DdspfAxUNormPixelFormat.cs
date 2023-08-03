@@ -10,6 +10,7 @@ public sealed class DdspfAxUNormPixelFormat<T> : DdspfUNormPixelFormat, IRawAPix
     public float GetAlpha(ReadOnlySpan<byte> pixel) => float.CreateTruncating(GetAlphaTyped(pixel)) / AlphaMax;
     public void SetAlpha(Span<byte> pixel, float value) => SetAlpha(pixel, T.CreateTruncating(value * AlphaMax));
     public T GetAlphaTyped(ReadOnlySpan<byte> pixel) => T.CreateTruncating((GetRaw(pixel) >> AlphaShift) & AlphaMax);
+
     public void SetAlpha(Span<byte> pixel, T value) =>
         SetRaw(pixel, GetRaw(pixel) & ~(AlphaMax << AlphaShift) | (Math.Clamp(uint.CreateTruncating(value), 0, AlphaMax) << AlphaShift));
 }

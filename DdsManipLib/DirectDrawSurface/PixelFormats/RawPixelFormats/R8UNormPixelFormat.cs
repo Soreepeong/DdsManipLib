@@ -16,6 +16,6 @@ public sealed class R8UNormPixelFormat : RawRPixelFormat, IRawRPixelFormat<byte>
     public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, byte.CreateTruncating(value * 256f));
     public void SetRed(Span<byte> pixel, byte value) => pixel[OffsetR] = value;
     public R8UNormPixelFormat() : base(AlphaType.None) { }
-    
+
     int IRawRAlignedBytePixelFormat.OffsetR => OffsetR;
 }

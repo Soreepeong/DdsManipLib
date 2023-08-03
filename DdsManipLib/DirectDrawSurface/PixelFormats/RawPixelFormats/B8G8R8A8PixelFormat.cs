@@ -11,7 +11,7 @@ public abstract class B8G8R8A8PixelFormat : RawRgbaPixelFormat, IRawRgbaAlignedB
     public override int BitsPerPixel => 32;
     public override int BytesPerPixel => 4;
     protected B8G8R8A8PixelFormat(AlphaType alphaType) : base(alphaType) { }
-    
+
     int IRawRAlignedBytePixelFormat.OffsetR => OffsetR;
     int IRawRgAlignedBytePixelFormat.OffsetG => OffsetG;
     int IRawRgbAlignedBytePixelFormat.OffsetB => OffsetB;

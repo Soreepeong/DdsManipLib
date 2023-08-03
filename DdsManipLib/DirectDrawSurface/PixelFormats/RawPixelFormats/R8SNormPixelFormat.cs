@@ -15,6 +15,6 @@ public sealed class R8SNormPixelFormat : RawRPixelFormat, IRawRPixelFormat<sbyte
     public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, sbyte.CreateTruncating(Math.Clamp(value, -1f, 1f) * 256f));
     public void SetRed(Span<byte> pixel, sbyte value) => pixel[OffsetR] = (byte) value;
     public R8SNormPixelFormat() : base(AlphaType.None) { }
-    
+
     int IRawRAlignedBytePixelFormat.OffsetR => OffsetR;
 }

@@ -10,6 +10,7 @@ public sealed class DdspfRxUNormPixelFormat<T> : DdspfUNormPixelFormat, IRawRPix
     public float GetRed(ReadOnlySpan<byte> pixel) => float.CreateTruncating(GetRedTyped(pixel)) / RedMax;
     public void SetRed(Span<byte> pixel, float value) => SetRed(pixel, T.CreateTruncating(value * RedMax));
     public T GetRedTyped(ReadOnlySpan<byte> pixel) => T.CreateTruncating((GetRaw(pixel) >> RedShift) & RedMax);
+
     public void SetRed(Span<byte> pixel, T value) =>
         SetRaw(pixel, GetRaw(pixel) & ~(RedMax << RedShift) | (Math.Clamp(uint.CreateTruncating(value), 0, RedMax) << RedShift));
 }

@@ -95,7 +95,6 @@ public enum DxgiFormat {
     R8SInt = 64, // 0x00000040
     A8UNorm = 65, // 0x00000041
 
-    // todo
     R1UNorm = 66, // 0x00000042
 
     // todo
@@ -103,7 +102,6 @@ public enum DxgiFormat {
     R8G8B8G8UNorm = 68, // 0x00000044
     G8R8G8B8UNorm = 69, // 0x00000045
 
-    // todo
     Bc1Typeless = 70, // 0x00000046
     Bc1UNorm = 71, // 0x00000047
     Bc1UNormSrgb = 72, // 0x00000048
@@ -120,7 +118,6 @@ public enum DxgiFormat {
     Bc5UNorm = 83, // 0x00000053
     Bc5SNorm = 84, // 0x00000054
 
-    // todo
     B5G6R5UNorm = 85, // 0x00000055
     B5G5R5A1UNorm = 86, // 0x00000056
 
@@ -166,13 +163,8 @@ public enum DxgiFormat {
     R10G10B10_7E3_A2Float = 116,
     R10G10B10_6E4_A2Float = 117,
 
-    // todo
     D16UNormS8UInt = 118,
-
-    // todo
     R16UNormX8Typeless = 119,
-
-    // todo
     X16TypelessG8UInt = 120,
     
     // todo
@@ -180,7 +172,6 @@ public enum DxgiFormat {
     V208 = 131, // 0x00000083
     V408 = 132, // 0x00000084
 
-    // todo
     R10G10B10SNormA2UNorm = 189, // 0x000000BD
 
     R4G4UNorm = 190, // 0x000000BE

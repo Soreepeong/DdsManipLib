@@ -14,29 +14,32 @@ public abstract class Bc3PixelFormat : BlockPixelFormat {
     public override int CalculateLinearSize(int width, int height) => Math.Max((width + 3) / 4, 1) * Math.Max((height + 3) / 4, 1) * 16;
     public override bool SupportsRawPixelFormat(IRawPixelFormat rawpf) => rawpf is IRawRAlignedBytePixelFormat;
 
-    public override void Decompress(IRawPixelFormat rawPixelFormat, ReadOnlySpan<byte> sourceSpan, int width, int height, Span<byte> targetSpan) => Squish.DecompressImage(
-        targetSpan,
-        rawPixelFormat.CalculatePitch(width),
-        width,
-        height,
-        sourceSpan,
-        GetSquishOptions2(rawPixelFormat));
+    public override void Decompress(IRawPixelFormat rawPixelFormat, ReadOnlySpan<byte> sourceSpan, int width, int height, Span<byte> targetSpan) =>
+        Squish.DecompressImage(
+            targetSpan,
+            rawPixelFormat.CalculatePitch(width),
+            width,
+            height,
+            sourceSpan,
+            GetSquishOptions2(rawPixelFormat));
 
-    public override void Compress(IRawPixelFormat rawPixelFormat, ReadOnlySpan<byte> sourceSpan, int width, int height, Span<byte> targetSpan) => Squish.CompressImage(
-        sourceSpan,
-        rawPixelFormat.CalculatePitch(width),
-        width,
-        height,
-        targetSpan,
-        GetSquishOptions2(rawPixelFormat));
+    public override void Compress(IRawPixelFormat rawPixelFormat, ReadOnlySpan<byte> sourceSpan, int width, int height, Span<byte> targetSpan) =>
+        Squish.CompressImage(
+            sourceSpan,
+            rawPixelFormat.CalculatePitch(width),
+            width,
+            height,
+            targetSpan,
+            GetSquishOptions2(rawPixelFormat));
 
-    public void Compress(IRawPixelFormat rawPixelFormat, ReadOnlySpan<byte> sourceSpan, int width, int height, Span<byte> targetSpan, SquishOptions2 options) => Squish.CompressImage(
-        sourceSpan,
-        rawPixelFormat.CalculatePitch(width),
-        width,
-        height,
-        targetSpan,
-        GetSquishOptions2(rawPixelFormat, options));
+    public void Compress(IRawPixelFormat rawPixelFormat, ReadOnlySpan<byte> sourceSpan, int width, int height, Span<byte> targetSpan, SquishOptions2 options) =>
+        Squish.CompressImage(
+            sourceSpan,
+            rawPixelFormat.CalculatePitch(width),
+            width,
+            height,
+            targetSpan,
+            GetSquishOptions2(rawPixelFormat, options));
 
     private static SquishOptions2 GetSquishOptions2(IRawPixelFormat fmt, SquishOptions2? template = default) {
         template ??= new();
@@ -48,7 +51,7 @@ public abstract class Bc3PixelFormat : BlockPixelFormat {
         template.OffsetA = (byte) (fmt is IRawRgbaAlignedBytePixelFormat rgba ? rgba.OffsetA : 0xFF);
         return template;
     }
-    
+
     protected Bc3PixelFormat(AlphaType alphaType) : base(alphaType) { }
 }
 

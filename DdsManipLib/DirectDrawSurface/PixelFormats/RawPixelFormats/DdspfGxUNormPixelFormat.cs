@@ -10,6 +10,7 @@ public sealed class DdspfGxUNormPixelFormat<T> : DdspfUNormPixelFormat, IRawGPix
     public float GetGreen(ReadOnlySpan<byte> pixel) => float.CreateTruncating(GetGreenTyped(pixel)) / GreenMax;
     public void SetGreen(Span<byte> pixel, float value) => SetGreen(pixel, T.CreateTruncating(value * GreenMax));
     public T GetGreenTyped(ReadOnlySpan<byte> pixel) => T.CreateTruncating((GetRaw(pixel) >> GreenShift) & GreenMax);
+
     public void SetGreen(Span<byte> pixel, T value) =>
         SetRaw(pixel, GetRaw(pixel) & ~(GreenMax << GreenShift) | (Math.Clamp(uint.CreateTruncating(value), 0, GreenMax) << GreenShift));
 }

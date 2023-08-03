@@ -17,6 +17,6 @@ public sealed class R8TypelessPixelFormat : RawRPixelFormat, IRawRPixelFormat<by
     public void SetRed(Span<byte> pixel, byte value) => pixel[OffsetR] = value;
     public void SetRed(Span<byte> pixel, sbyte value) => pixel[OffsetR] = (byte) value;
     public R8TypelessPixelFormat() : base(AlphaType.None) { }
-    
+
     int IRawRAlignedBytePixelFormat.OffsetR => OffsetR;
 }

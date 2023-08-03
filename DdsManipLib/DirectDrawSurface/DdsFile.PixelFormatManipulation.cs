@@ -87,13 +87,15 @@ public partial class DdsFile {
         if (PixelFormat is not { } sourcePixelFormat)
             return false;
 
+        byte[]? tmp = null;
         foreach (var slice in EnumerateSlices()) {
             if (!sourcePixelFormat.ConvertToAuto(
                     SliceSpan(slice.Image, slice.Face, slice.Mipmap, slice.Slice),
                     slice.Width,
                     slice.Height,
                     targetPixelFormat,
-                    target.SliceSpan(slice.Image, slice.Face, slice.Mipmap, slice.Slice)))
+                    target.SliceSpan(slice.Image, slice.Face, slice.Mipmap, slice.Slice),
+                    ref tmp))
                 return false;
         }
 

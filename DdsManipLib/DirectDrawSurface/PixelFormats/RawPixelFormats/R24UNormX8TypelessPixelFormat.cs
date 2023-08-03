@@ -13,10 +13,12 @@ public sealed class R24UNormX8TypelessPixelFormat : RawRPixelFormat, IRawRPixelF
     public override int BitsPerPixel => 32;
     public override int BytesPerPixel => 4;
     public override float GetRed(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt32LittleEndian(pixel[OffsetR..]) & 0xFFFFFFu;
-    public uint GetRedTyped(ReadOnlySpan<byte> pixel) => 
-        (uint)(pixel[OffsetR + 2] | (pixel[OffsetR] << 8) | (pixel[OffsetR + 1] << 16) | (pixel[OffsetR + 2] << 24));
+
+    public uint GetRedTyped(ReadOnlySpan<byte> pixel) =>
+        (uint) (pixel[OffsetR + 2] | (pixel[OffsetR] << 8) | (pixel[OffsetR + 1] << 16) | (pixel[OffsetR + 2] << 24));
 
     public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, uint.CreateTruncating(value * uint.MaxValue));
+
     public void SetRed(Span<byte> pixel, uint value) {
         pixel[OffsetR] = (byte) (value >> 8);
         pixel[OffsetR + 1] = (byte) (value >> 16);

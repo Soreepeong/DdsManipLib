@@ -44,14 +44,14 @@ public static class PixelFormatUtilities {
             .ToImmutableDictionary(x => Tuple.Create(x.AlphaType, x.DxgiFormat), x => x);
         DdspfToPixelFormatMap = opaquePixelFormats
             .Concat(alphaPixelFormats.Where(x => x.AlphaType == AlphaType.Straight))
-            .Where(x => x.DdsPixelFormat is {HasValidFormat: true, UseDxt10Header: false} )
+            .Where(x => x.DdsPixelFormat is {HasValidFormat: true, UseDxt10Header: false})
             .ToImmutableDictionary(x => x.DdsPixelFormat, x => x);
     }
 
     public static bool TryGetPixelFormat(this DxgiFormat dxgiFormat, AlphaType alphaType, [MaybeNullWhen(false)] out IPixelFormat pixelFormat) {
         if (alphaType is AlphaType.None)
             return DxgiToPixelFormatMap.TryGetValue(Tuple.Create(alphaType, dxgiFormat), out pixelFormat);
-        
+
         foreach (var e in Enum.GetValues<AlphaType>()) {
             if ((e & alphaType) != 0 && DxgiToPixelFormatMap.TryGetValue(Tuple.Create(e, dxgiFormat), out pixelFormat))
                 return true;
@@ -189,26 +189,62 @@ public static class PixelFormatUtilities {
                 targetSpan = targetSpan[..targetPixelFormat.CalculateLinearSize(width, height)];
                 sourceSpan.CopyTo(targetSpan);
                 return true;
-            case IRawPixelFormat rawS when targetPixelFormat is IRawPixelFormat rawT:
-                ConvertTo(rawS, sourceSpan, width, height, rawT, targetSpan);
-                return true;
-            case IBlockPixelFormat blockS when Equals(targetPixelFormat, blockS.SuggestedRawPixelFormat):
-                blockS.Decompress(sourceSpan, width, height, targetSpan);
+            case IRawPixelFormat rawS: {
+                switch (targetPixelFormat) {
+                    case IRawPixelFormat rawT:
+                        ConvertTo(rawS, sourceSpan, width, height, rawT, targetSpan);
+                        return true;
+                    case IBlockPixelFormat blockT:
+                        if (blockT.SupportsRawPixelFormat(rawS)) {
+                            blockT.Compress(rawS, sourceSpan, width, height, targetSpan);
+                        } else {
+                            var rawpf = blockT.SuggestedRawPixelFormat;
+                            var tmplen = rawpf.CalculateLinearSize(width, height);
+                            if (scratchBuffer is null || scratchBuffer.Length < tmplen)
+                                scratchBuffer = new byte[tmplen];
+                            ConvertTo(rawS, sourceSpan, width, height, rawpf, scratchBuffer);
+                            blockT.Compress(rawpf, scratchBuffer, width, height, targetSpan);
+                        }
+
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            case IBlockPixelFormat blockS when targetPixelFormat is IRawPixelFormat rawT && blockS.SupportsRawPixelFormat(rawT):
+                blockS.Decompress(rawT, sourceSpan, width, height, targetSpan);
                 return true;
             case IBlockPixelFormat blockS: {
-                var rawpf = blockS.SuggestedRawPixelFormat;
-                var tmplen = rawpf.CalculateLinearSize(width, height);
-                if (scratchBuffer is null || scratchBuffer.Length < tmplen)
-                    scratchBuffer = new byte[tmplen];
+                switch (targetPixelFormat) {
+                    case IRawPixelFormat rawT:
+                        if (blockS.SupportsRawPixelFormat(rawT)) { } else {
+                            var rawpf = blockS.SuggestedRawPixelFormat;
+                            var tmplen = rawpf.CalculateLinearSize(width, height);
+                            if (scratchBuffer is null || scratchBuffer.Length < tmplen)
+                                scratchBuffer = new byte[tmplen];
 
-                blockS.Decompress(sourceSpan, width, height, scratchBuffer);
-                if (targetPixelFormat is IRawPixelFormat rawT) {
-                    ConvertTo(rawpf, scratchBuffer, width, height, rawT, targetSpan);
-                } else {
-                    throw new NotImplementedException();
+                            blockS.Decompress(rawpf, sourceSpan, width, height, scratchBuffer);
+                            ConvertTo(rawpf, scratchBuffer, width, height, rawT, targetSpan);
+                        }
+
+                        return true;
+                    case IBlockPixelFormat blockT: {
+                        var rawpf = blockS.SuggestedRawPixelFormat;
+                        if (!blockT.SupportsRawPixelFormat(rawpf))
+                            return false;
+
+                        var tmplen = rawpf.CalculateLinearSize(width, height);
+                        if (scratchBuffer is null || scratchBuffer.Length < tmplen)
+                            scratchBuffer = new byte[tmplen];
+
+                        blockS.Decompress(rawpf, sourceSpan, width, height, scratchBuffer);
+                        blockT.Compress(rawpf, scratchBuffer, width, height, targetSpan);
+
+                        return true;
+                    }
+                    default:
+                        return false;
                 }
-
-                return true;
             }
             default:
                 return false;
