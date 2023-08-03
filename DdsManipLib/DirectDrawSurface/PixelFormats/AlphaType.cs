@@ -1,5 +1,7 @@
 ﻿using System;
 
+#pragma warning disable CS1591
+
 namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 
 /// <summary>
@@ -26,7 +28,7 @@ public enum AlphaType : byte {
     /// Nonstandard?
     /// </summary>
     Custom = 4,
-    
+
     /// <summary>
     /// May contain any alpha type.
     /// </summary>

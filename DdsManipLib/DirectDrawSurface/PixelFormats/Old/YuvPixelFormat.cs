@@ -2,6 +2,8 @@
 using System.Linq;
 using DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
+#pragma warning disable CS1591
+
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 /// <summary>

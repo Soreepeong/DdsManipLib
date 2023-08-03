@@ -1,5 +1,6 @@
 ﻿using System;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
+
+#pragma warning disable CS1591
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.DepthPixelFormats;
 

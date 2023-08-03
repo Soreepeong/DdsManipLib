@@ -205,7 +205,7 @@ public partial class DdsFile
                     case DxgiFormat.D24UNormS8UInt:
                     case DxgiFormat.R24UNormX8Typeless:
                     case DxgiFormat.X24TypelessG8UInt:
-                    case DxgiFormat.R9G9B9E5Sharedexp:
+                    case DxgiFormat.R9G9B9E5SharedExp:
                     case DxgiFormat.B8G8R8A8UNorm:
                     case DxgiFormat.B8G8R8X8UNorm:
                     case DxgiFormat.R10G10B10XrBiasA2UNorm:

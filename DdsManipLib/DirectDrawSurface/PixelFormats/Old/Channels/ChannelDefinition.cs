@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 
+#pragma warning disable CS1591
+
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
 /// <summary>

@@ -2,6 +2,8 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
+#pragma warning disable CS1591
+
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
 public readonly partial struct ChannelDefinition {

@@ -4,6 +4,8 @@ using DdsManipLib.BcCodec;
 using DdsManipLib.BcCodec.SquishInternal;
 using DdsManipLib.DirectDrawSurface.PixelFormats.Old.Channels;
 
+#pragma warning disable CS1591
+
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.Old;
 
 /// <summary>
