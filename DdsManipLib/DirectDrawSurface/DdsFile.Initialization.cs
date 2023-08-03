@@ -30,7 +30,7 @@ public partial class DdsFile {
     /// <param name="initializeBody">Whether to allocate byte array for the body.</param>
     /// <returns>If false, the attempt was unsuccessful, and the object is in indeterminate state.</returns>
     public bool TryInitialize1D(
-        PixelFormat pixelFormat,
+        IPixelFormat pixelFormat,
         int width,
         int mipmaps = 1,
         int images = 1,
@@ -66,7 +66,7 @@ public partial class DdsFile {
     /// <param name="initializeBody">Whether to allocate byte array for the body.</param>
     /// <returns>If false, the attempt was unsuccessful, and the object is in indeterminate state.</returns>
     public bool TryInitialize2D(
-        PixelFormat pixelFormat,
+        IPixelFormat pixelFormat,
         int width,
         int height,
         int mipmaps = 1,
@@ -107,7 +107,7 @@ public partial class DdsFile {
     /// <param name="initializeBody">Whether to allocate byte array for the body.</param>
     /// <returns>If false, the attempt was unsuccessful, and the object is in indeterminate state.</returns>
     public bool TryInitialize3D(
-        PixelFormat pixelFormat,
+        IPixelFormat pixelFormat,
         int width,
         int height,
         int depth,
@@ -150,7 +150,7 @@ public partial class DdsFile {
     /// <param name="initializeBody">Whether to allocate byte array for the body.</param>
     /// <returns>If false, the attempt was unsuccessful, and the object is in indeterminate state.</returns>
     public bool TryInitializeCubeMap(
-        PixelFormat pixelFormat,
+        IPixelFormat pixelFormat,
         int width,
         int height,
         int mipmaps = 1,

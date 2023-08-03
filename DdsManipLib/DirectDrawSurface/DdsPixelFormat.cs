@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using DdsManipLib.DirectDrawSurface.PixelFormats;
 
 namespace DdsManipLib.DirectDrawSurface;
 
@@ -13,7 +9,7 @@ namespace DdsManipLib.DirectDrawSurface;
 /// Surface pixel format, stored in <see cref="DdsHeader" />.
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 32)]
-public struct DdsPixelFormat {
+public struct DdsPixelFormat : IEquatable<DdsPixelFormat> {
     /// <summary>
     /// Size of this structure. Must be 32;
     /// </summary>
@@ -69,6 +65,22 @@ public struct DdsPixelFormat {
     /// For instance, given the A8R8G8B8 format, the alpha mask would be 0xff000000.
     /// </summary>
     public uint ABitMask;
+
+    /// <summary>
+    /// Whether this <see cref="DdsPixelFormat"/> contains a valid pixel format.
+    /// </summary>
+    public bool HasValidFormat => Flags != 0
+        && (
+            (Flags == DdsPixelFormatFlags.FourCc && FourCc != DdsFourCc.Unknown)
+            || (Flags.HasFlag(DdsPixelFormatFlags.Rgb) && RgbBitCount is > 0 and <= 32)
+            || (Flags.HasFlag(DdsPixelFormatFlags.Luminance) && RgbBitCount is > 0 and <= 32)
+            || (Flags.HasFlag(DdsPixelFormatFlags.Alpha) && RgbBitCount is > 0 and <= 32)
+            || (Flags.HasFlag(DdsPixelFormatFlags.Yuv) && RgbBitCount is > 0 and <= 32));
+
+    /// <summary>
+    /// Whether this <see cref="DdsPixelFormat"/> points to the usage of <see cref="DdsHeaderDxt10"/>.
+    /// </summary>
+    public bool UseDxt10Header => Flags.HasFlag(DdsPixelFormatFlags.FourCc) && FourCc == DdsFourCc.Dx10;
 
     /// <summary>
     /// Read the struct from the given BinaryReader.
@@ -135,7 +147,7 @@ public struct DdsPixelFormat {
     /// <summary>
     /// Construct a new instance of <see cref="DdsPixelFormat" /> containing a luminance channel, optionally with an alpha channel.
     /// </summary>
-    public static DdsPixelFormat WithLuminance(int nbits, uint lmask, uint amask = 0u) => new() {
+    public static DdsPixelFormat FromLuminance(int nbits, uint lmask, uint amask = 0u) => new() {
         Size = Unsafe.SizeOf<DdsPixelFormat>(),
         RgbBitCount = nbits is > 0 and <= 32 ? nbits : throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null),
         Flags = DdsPixelFormatFlags.Luminance | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels),
@@ -156,128 +168,29 @@ public struct DdsPixelFormat {
         ABitMask = amask,
     };
 
-    /// <summary>
-    /// Construct a new instance of <see cref="DdsPixelFormat" /> from a <see cref="IPixelFormat"/>.
-    /// </summary>
-    public static bool TryFromPixelFormat(IPixelFormat value, out DdsPixelFormat ddspf) {
-        if (Enum.GetNames<DdsFourCc>()
-                .FirstOrDefault(x => value.Equals(typeof(DdsFourCc).GetField(x)?.GetCustomAttribute<PixelFormat>())) is { } fourCcName) {
-            ddspf = FromFourCc(Enum.Parse<DdsFourCc>(fourCcName));
-            return true;
-        }
+    /// <inheritdoc/>
+    public bool Equals(DdsPixelFormat other) => Size == other.Size && Flags == other.Flags && FourCc == other.FourCc && RgbBitCount == other.RgbBitCount &&
+        RBitMask == other.RBitMask && GBitMask == other.GBitMask && BBitMask == other.BBitMask && ABitMask == other.ABitMask;
 
-        if (value.Bpp is < 0 or > 32) {
-            ddspf = default;
-            return false;
-        }
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj is DdsPixelFormat other && Equals(other);
 
-        switch (value) {
-            case RgbaxxPixelFormat {X2: null} rgbaxx:
-                ddspf = FromRgba(
-                    value.Bpp,
-                    rgbaxx.Red?.BitMask32Shifted ?? 0u,
-                    rgbaxx.Green?.BitMask32Shifted ?? 0u,
-                    rgbaxx.Blue?.BitMask32Shifted ?? 0u,
-                    rgbaxx.Alpha?.BitMask32Shifted ?? 0u);
-                return true;
-            case LaxPixelFormat lax:
-                ddspf = WithLuminance(lax.Bpp, lax.Luminance.BitMask32Shifted, lax.Alpha?.BitMask32Shifted ?? 0u);
-                return true;
-            case AxPixelFormat ax:
-                ddspf = FromAlpha(ax.Bpp, ax.Alpha.BitMask32Shifted);
-                return true;
-            default:
-                ddspf = default;
-                return false;
-        }
-    }
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(Size, (int) Flags, (int) FourCc, RgbBitCount, RBitMask, GBitMask, BBitMask, ABitMask);
 
     /// <summary>
-    /// Attempt to deduce the fields of this object from a <see cref="IPixelFormat"/>.
+    /// Test for equality.
     /// </summary>
-    /// <param name="value">The value to convert from.</param>
-    /// <returns>Whether the corresponding format has been found.</returns>
-    public bool TryUpdateFromPixelFormat(IPixelFormat value) {
-        if (Enum.GetNames<DdsFourCc>()
-                .FirstOrDefault(x => value.Equals(typeof(DdsFourCc).GetField(x)?.GetCustomAttribute<PixelFormat>())) is { } fourCcName) {
-            this = FromFourCc(Enum.Parse<DdsFourCc>(fourCcName));
-            return true;
-        }
-
-        if (value.Bpp is < 0 or > 32)
-            return false;
-
-        switch (value) {
-            case RgbaxxPixelFormat {X2: null} rgbaxx:
-                this = FromRgba(
-                    value.Bpp,
-                    rgbaxx.Red?.BitMask32Shifted ?? 0u,
-                    rgbaxx.Green?.BitMask32Shifted ?? 0u,
-                    rgbaxx.Blue?.BitMask32Shifted ?? 0u,
-                    rgbaxx.Alpha?.BitMask32Shifted ?? 0u);
-                return true;
-            case LaxPixelFormat lax:
-                this = WithLuminance(lax.Bpp, lax.Luminance.BitMask32Shifted, lax.Alpha?.BitMask32Shifted ?? 0u);
-                return true;
-            case AxPixelFormat ax:
-                this = FromAlpha(ax.Bpp, ax.Alpha.BitMask32Shifted);
-                return true;
-            default:
-                return false;
-        }
-    }
+    /// <param name="left">First item.</param>
+    /// <param name="right">Second item.</param>
+    /// <returns>Whether they equal.</returns>
+    public static bool operator ==(DdsPixelFormat? left, DdsPixelFormat? right) => left?.Equals(right) ?? right is null;
 
     /// <summary>
-    /// Attempt to deduce a corresponding <see cref="IPixelFormat"/> from this <see cref="DdsPixelFormat"/>.
+    /// Test for inequality.
     /// </summary>
-    /// <param name="pixelFormat">The resulting pixel format, or null if not found.</param>
-    /// <returns>Whether the corresponding format has been found.</returns>
-    public bool TryGetPixelFormat([MaybeNullWhen(false)] out IPixelFormat pixelFormat) {
-        pixelFormat = null;
-
-        if (Flags.HasFlag(DdsPixelFormatFlags.FourCc)) {
-            if (Enum.GetName(FourCc) is not { } name)
-                return false;
-            if (typeof(DdsFourCc).GetField(name)?.GetCustomAttribute<PixelFormat>() is not { } pf)
-                return false;
-
-            pixelFormat = pf;
-            return true;
-        }
-
-        if (Flags.HasFlag(DdsPixelFormatFlags.Rgb)) {
-            pixelFormat = RgbaxxPixelFormat.FromRgbaMask(
-                RgbBitCount,
-                RBitMask,
-                GBitMask,
-                BBitMask,
-                Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ABitMask : 0u);
-            return true;
-        }
-
-        if (Flags.HasFlag(DdsPixelFormatFlags.Yuv)) {
-            pixelFormat = YuvaxPixelFormat.FromYuvaMask(
-                RgbBitCount,
-                RBitMask,
-                GBitMask,
-                BBitMask,
-                Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ABitMask : 0u);
-            return true;
-        }
-
-        if (Flags.HasFlag(DdsPixelFormatFlags.Luminance)) {
-            pixelFormat = LaxPixelFormat.FromLaMask(
-                RgbBitCount,
-                RBitMask,
-                Flags.HasFlag(DdsPixelFormatFlags.AlphaPixels) ? ABitMask : 0u);
-            return true;
-        }
-
-        if (Flags.HasFlag(DdsPixelFormatFlags.Alpha)) {
-            pixelFormat = AxPixelFormat.FromAMask(RgbBitCount, ABitMask);
-            return true;
-        }
-
-        return false;
-    }
+    /// <param name="left">First item.</param>
+    /// <param name="right">Second item.</param>
+    /// <returns>Whether they does not equal.</returns>
+    public static bool operator !=(DdsPixelFormat? left, DdsPixelFormat? right) => !(left?.Equals(right) ?? right is null);
 }

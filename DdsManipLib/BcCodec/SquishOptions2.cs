@@ -7,7 +7,7 @@ namespace DdsManipLib.BcCodec;
 /// <summary>
 /// Options for use with Squish.
 /// </summary>
-public class SquishOptions2 : ICloneable{
+public record SquishOptions2 {
     /// <summary>
     /// Perceptual weight when compressing using Cluster Fit methods.
     /// </summary>
@@ -104,6 +104,11 @@ public class SquishOptions2 : ICloneable{
     public int Threads = 0;
 
     /// <summary>
+    /// Construct a new SquishOptions2.
+    /// </summary>
+    public SquishOptions2() {}
+
+    /// <summary>
     /// Construct a new SquishOptions2, with the specified compression method.
     /// </summary>
     /// <param name="method">Compression method.</param>
@@ -150,7 +155,4 @@ public class SquishOptions2 : ICloneable{
     /// Number of bytes per block, according to the compression method.
     /// </summary>
     public int BytesPerBlock => Method is SquishMethod.Bc1 or SquishMethod.Bc4S or SquishMethod.Bc4U ? 8 : 16;
-
-    /// <inheritdoc/>
-    public object Clone() => MemberwiseClone();
 }

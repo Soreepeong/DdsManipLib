@@ -1,7 +1,4 @@
-﻿using DdsManipLib.DirectDrawSurface.PixelFormats;
-using DdsManipLib.DirectDrawSurface.PixelFormats.Channels;
-
-namespace DdsManipLib.DirectDrawSurface;
+﻿namespace DdsManipLib.DirectDrawSurface;
 
 /// <summary>
 /// Specify how pixels are represented.
@@ -11,25 +8,12 @@ public enum DdsFourCc {
     Unknown = 0,
 
     Dx10 = 0x30315844,
-
-    [BlockCompressionPixelFormat.Presets.Rgb<UNormChannel<byte>>(1, 8, 4, 8, 8, 8)]
     Dxt1 = 0x31545844,
-
-    [BlockCompressionPixelFormat.Presets.Rgba<UNormChannel<byte>>(2, 16, 8, 8, 8, 8, 8, AlphaType.Premultiplied)]
     Dxt2 = 0x32545844,
-
-    [BlockCompressionPixelFormat.Presets.Rgba<UNormChannel<byte>>(2, 16, 8, 8, 8, 8, 8, AlphaType.Straight)]
     Dxt3 = 0x33545844,
-
-    [BlockCompressionPixelFormat.Presets.Rgba<UNormChannel<byte>>(3, 16, 8, 8, 8, 8, 8, AlphaType.Premultiplied)]
     Dxt4 = 0x34545844,
-
-    [BlockCompressionPixelFormat.Presets.Rgba<UNormChannel<byte>>(3, 16, 8, 8, 8, 8, 8, AlphaType.Straight)]
     Dxt5 = 0x35545844,
-    
-    [BlockCompressionPixelFormat.Presets.R<UNormChannel<byte>>(4, 8, 4, 8)]
     Ati1 = 0x31495441,
-    [BlockCompressionPixelFormat.Presets.Rg<UNormChannel<byte>>(5, 16, 8, 8, 8)]
     Ati2 = 0x32495441,
     Atc = 0x20435441,
     AtcI = 0x49435441,
@@ -39,14 +23,10 @@ public enum DdsFourCc {
     Bc2 = Dxt3,
     Bc3 = Dxt5,
     Bc4 = Ati1,
-    [BlockCompressionPixelFormat.Presets.R<SNormChannel<sbyte>>(4, 8, 4, 8)]
     Bc4S = 0x53344342,
-    [BlockCompressionPixelFormat.Presets.R<UNormChannel<byte>>(4, 8, 4, 8)]
     Bc4U = 0x55344342,
     Bc5 = Ati2,
-    [BlockCompressionPixelFormat.Presets.Rg<SNormChannel<sbyte>>(5, 16, 8, 8, 8)]
     Bc5S = 0x53354342,
-    [BlockCompressionPixelFormat.Presets.Rg<UNormChannel<byte>>(5, 16, 8, 8, 8)]
     Bc5U = 0x55354342,
 
     // https://github.com/microsoft/DirectXTK/wiki/DDSTextureLoader

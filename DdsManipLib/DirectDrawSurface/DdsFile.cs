@@ -51,11 +51,11 @@ public partial class DdsFile : ICloneable {
     /// </summary>
     /// <param name="pixelFormat">If supplied, the pixel format will be update to the supplied value.</param>
     /// <returns>Whether the field <see cref="DdsHeaderDxt10.DxgiFormat"/> contains a valid value.</returns>
-    public bool EnableDxt10Header(PixelFormat? pixelFormat = null) {
+    public bool EnableDxt10Header(IPixelFormat? pixelFormat = null) {
         pixelFormat ??= PixelFormat;
         // Note: set Header.PixelFormat later so that the values are taken from non-DXT10 headers.
         HeaderDxt10 = new() {
-            DxgiFormat = pixelFormat.TryGetDxgiFormat(out var dxgiFormat) ? dxgiFormat : DxgiFormat.Unknown,
+            DxgiFormat = pixelFormat?.DxgiFormat ?? DxgiFormat.Unknown,
             ResourceDimension = Is1D
                 ? DdsHeaderDxt10ResourceDimension.Texture1D
                 : Is3D
@@ -63,21 +63,15 @@ public partial class DdsFile : ICloneable {
                     : DdsHeaderDxt10ResourceDimension.Texture2D,
             MiscFlag = IsCubeMap ? DdsHeaderDxt10MiscFlags.TextureCube : 0,
             ArraySize = NumImages,
-            MiscFlags2 = pixelFormat is not IAlphaPixelFormat apf
-                ? DdsHeaderDxt10MiscFlags2.AlphaModeOpaque
-                : apf.AlphaType switch {
-                    AlphaType.None => DdsHeaderDxt10MiscFlags2.AlphaModeOpaque,
-                    AlphaType.Straight => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
-                    AlphaType.Premultiplied => DdsHeaderDxt10MiscFlags2.AlphaModePremultiplied,
-                    AlphaType.Custom => DdsHeaderDxt10MiscFlags2.AlphaModeCustom,
-                    _ => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
-                },
+            MiscFlags2 = pixelFormat?.AlphaType switch {
+                AlphaType.None => DdsHeaderDxt10MiscFlags2.AlphaModeOpaque,
+                AlphaType.Straight => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
+                AlphaType.Premultiplied => DdsHeaderDxt10MiscFlags2.AlphaModePremultiplied,
+                AlphaType.Custom => DdsHeaderDxt10MiscFlags2.AlphaModeCustom,
+                _ => DdsHeaderDxt10MiscFlags2.AlphaModeStraight,
+            },
         };
-        Header.PixelFormat = new() {
-            Size = Unsafe.SizeOf<DdsPixelFormat>(),
-            Flags = DdsPixelFormatFlags.FourCc,
-            FourCc = DdsFourCc.Dx10,
-        };
+        Header.PixelFormat = DdsPixelFormat.FromFourCc(DdsFourCc.Dx10);
 
         return HeaderDxt10.DxgiFormat != DxgiFormat.Unknown;
     }
@@ -87,9 +81,9 @@ public partial class DdsFile : ICloneable {
     /// </summary>
     /// <param name="pixelFormat">If supplied, the pixel format will be update to the supplied value.</param>
     /// <returns>Whether the field <see cref="DdsHeader.PixelFormat"/>.<see cref="DdsPixelFormat.Flags"/> contains a valid value.</returns>
-    public bool DisableDxt10Header(PixelFormat? pixelFormat = null) {
+    public bool DisableDxt10Header(IPixelFormat? pixelFormat = null) {
         pixelFormat ??= PixelFormat;
-        if (!TryUpdatePixelFormat(pixelFormat, true, false)) {
+        if (pixelFormat is null || !TryUpdatePixelFormat(pixelFormat, true, false)) {
             Header.PixelFormat = default;
             HeaderDxt10 = default;
         }
@@ -138,7 +132,7 @@ public partial class DdsFile : ICloneable {
     /// <summary>
     /// Number of bits per pixel, for the pixel format used in this file.
     /// </summary>
-    public int Bpp => PixelFormat.Bpp;
+    public int Bpp => PixelFormat?.BitsPerPixel ?? 0;
 
     /// <summary>
     /// Get whether this file represents an one-dimensional texture.
@@ -231,7 +225,7 @@ public partial class DdsFile : ICloneable {
     /// </summary>
     /// <param name="mipmapIndex">Index of the mipmap.</param>
     /// <returns>Pitch(stride) of the mipmap.</returns>
-    public int Pitch(int mipmapIndex) => PixelFormat.CalculatePitch(Width(mipmapIndex));
+    public int Pitch(int mipmapIndex) => PixelFormat?.CalculatePitch(Width(mipmapIndex)) ?? 0;
 
     /// <summary>
     /// Get the height of the specified mipmap in this file.
