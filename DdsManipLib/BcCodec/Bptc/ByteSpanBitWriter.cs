@@ -1,6 +1,6 @@
 using System;
 
-namespace DdsManipLib.BcCodec.SquishInternal.Bc7;
+namespace DdsManipLib.BcCodec.Bptc;
 
 internal ref struct ByteSpanBitWriter {
     private readonly Span<byte> _data;

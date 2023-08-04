@@ -5,7 +5,7 @@ using System.Buffers.Binary;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
-public sealed class R32FloatPixelFormat : RawRPixelFormat, IRawRPixelFormat<float> {
+public sealed class R32FloatPixelFormat : RawRPixelFormat, IRawRAlignedFloatPixelFormat {
     public const int OffsetR = 0;
 
     public override DxgiFormat DxgiFormat => DxgiFormat.R32Float;
@@ -15,4 +15,6 @@ public sealed class R32FloatPixelFormat : RawRPixelFormat, IRawRPixelFormat<floa
     public float GetRedTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadSingleLittleEndian(pixel[OffsetR..]);
     public override void SetRed(Span<byte> pixel, float value) => BinaryPrimitives.WriteSingleLittleEndian(pixel[OffsetR..], value);
     public R32FloatPixelFormat() : base(AlphaType.None) { }
+    
+    int IRawRAlignedFloatPixelFormat.OffsetR => OffsetR;
 }

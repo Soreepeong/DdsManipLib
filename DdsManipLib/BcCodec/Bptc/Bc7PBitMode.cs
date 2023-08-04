@@ -1,4 +1,4 @@
-namespace DdsManipLib.BcCodec.SquishInternal.Bc7;
+namespace DdsManipLib.BcCodec.Bptc;
 
 internal enum Bc7PBitMode : byte {
     None,

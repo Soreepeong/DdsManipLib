@@ -205,13 +205,19 @@ public static class Squish {
         SquishOptions2 options)
         where TPixel : unmanaged
         where TBlock : unmanaged {
-        var decompresser = new BlockDecompresser(options);
         fixed (void* pPixels = pixels)
         fixed (void* pBlock = block) {
             var pixelsBytes = new Span<byte>(pPixels, pixels.Length * sizeof(TPixel));
             var blockBytes = new Span<byte>(pBlock, block.Length * sizeof(TBlock));
-            decompresser.DecompressFrom(blockBytes);
-            decompresser.RemapChannelsInto(pixelsBytes);
+            if (options.Method is SquishMethod.Bc6S or SquishMethod.Bc6U) {
+                var decompresser = new BlockDecompresserF32(options);
+                decompresser.DecompressFrom(blockBytes);
+                decompresser.RemapChannelsInto(pixelsBytes);
+            } else {
+                var decompresser = new BlockDecompresser(options);
+                decompresser.DecompressFrom(blockBytes);
+                decompresser.RemapChannelsInto(pixelsBytes);
+            }
         }
     }
 
@@ -239,22 +245,37 @@ public static class Squish {
         where TBlock : unmanaged {
         fixed (void* pPixels = pixels)
         fixed (void* pBlocks = blocks) {
-            var decompresser = new BlockDecompresser(options);
             var pixelsBytes = new Span<byte>(pPixels, pixels.Length * sizeof(TPixel));
             var blocksBytes = new Span<byte>(pBlocks, blocks.Length * sizeof(TBlock));
             var strideBytes = sizeof(TPixel) * stride;
 
-            // loop over blocks
-            for (var y = 0; y < height; y += 4) {
-                for (var x = 0; x < width; x += 4) {
-                    // decompress the block
-                    decompresser.DecompressFrom(blocksBytes);
+            if (options.Method is SquishMethod.Bc6S or SquishMethod.Bc6U) {
+                var decompresser = new BlockDecompresserF32(options);
+                for (var y = 0; y < height; y += 4) {
+                    for (var x = 0; x < width; x += 4) {
+                        // decompress the block
+                        decompresser.DecompressFrom(blocksBytes);
 
-                    // write the decompressed pixels to the correct image locations
-                    decompresser.RemapChannelsInto(pixelsBytes, x, y, strideBytes, width, height);
+                        // write the decompressed pixels to the correct image locations
+                        decompresser.RemapChannelsInto(pixelsBytes, x, y, strideBytes, width, height);
 
-                    // advance
-                    blocksBytes = blocksBytes[options.BytesPerBlock..];
+                        // advance
+                        blocksBytes = blocksBytes[options.BytesPerBlock..];
+                    }
+                }
+            } else {
+                var decompresser = new BlockDecompresser(options);
+                for (var y = 0; y < height; y += 4) {
+                    for (var x = 0; x < width; x += 4) {
+                        // decompress the block
+                        decompresser.DecompressFrom(blocksBytes);
+
+                        // write the decompressed pixels to the correct image locations
+                        decompresser.RemapChannelsInto(pixelsBytes, x, y, strideBytes, width, height);
+
+                        // advance
+                        blocksBytes = blocksBytes[options.BytesPerBlock..];
+                    }
                 }
             }
         }

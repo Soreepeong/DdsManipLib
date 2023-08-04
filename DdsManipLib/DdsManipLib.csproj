@@ -18,7 +18,9 @@
 
     <ItemGroup>
       <None Remove="DirectDrawSurface\PixelFormats\Old\**" />
+
     </ItemGroup>
+
 
 
 

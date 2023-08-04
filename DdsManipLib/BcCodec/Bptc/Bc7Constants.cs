@@ -1,6 +1,6 @@
-namespace DdsManipLib.BcCodec.SquishInternal.Bc7;
+namespace DdsManipLib.BcCodec.Bptc;
 
-internal class Bc7Constants {
+internal static class Bc7Constants {
     public static readonly byte[][][] PartitionTables = {
         // 0 subset cannot happen
         null!,
@@ -145,7 +145,7 @@ internal class Bc7Constants {
         },
     };
 
-    public static readonly int[] Subsets2AnchorIndices2 = {
+    public static readonly byte[] Subsets2AnchorIndices2 = {
         15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15,
         15, 2, 8, 2, 2, 8, 8, 15,
@@ -156,7 +156,7 @@ internal class Bc7Constants {
         15, 15, 15, 15, 15, 2, 2, 15
     };
 
-    public static readonly int[] Subsets3AnchorIndices2 = {
+    public static readonly byte[] Subsets3AnchorIndices2 = {
         3, 3, 15, 15, 8, 3, 15, 15,
         8, 8, 6, 6, 6, 5, 3, 3,
         3, 3, 8, 15, 3, 3, 6, 10,
@@ -167,7 +167,7 @@ internal class Bc7Constants {
         5, 10, 8, 13, 15, 12, 3, 3
     };
 
-    public static readonly int[] Subsets3AnchorIndices3 = {
+    public static readonly byte[] Subsets3AnchorIndices3 = {
         15, 8, 8, 3, 15, 15, 3, 8,
         15, 15, 15, 15, 15, 15, 15, 8,
         15, 8, 15, 3, 15, 8, 15, 8,
@@ -177,10 +177,4 @@ internal class Bc7Constants {
         15, 3, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 3, 15, 15, 8
     };
-
-    public static readonly byte[] InterpolationWeights2 = {0, 21, 43, 64};
-    public static readonly byte[] InterpolationWeights3 = {0, 9, 18, 27, 37, 46, 55, 64};
-
-    public static readonly byte[] InterpolationWeights4 =
-        {0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64};
 }

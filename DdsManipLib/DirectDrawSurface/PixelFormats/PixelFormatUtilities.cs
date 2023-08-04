@@ -153,11 +153,11 @@ public static class PixelFormatUtilities {
     }
 
     public static int RawToSInt(uint rawValue, int sourceBits) {
-        rawValue &= (1u << sourceBits) - 1u;
         var signMask = 1u << (sourceBits - 1);
+        var numberMask = signMask - 1;
         if ((rawValue & signMask) == 0)
-            return (int) rawValue;
-        return (int) ((uint.MaxValue << sourceBits) | rawValue);
+            return (int) (rawValue & numberMask);
+        return (int) (~numberMask | (rawValue & numberMask));
     }
 
     public static uint SIntToRaw(int intValue, int sourceBits) {

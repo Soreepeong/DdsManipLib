@@ -1,4 +1,4 @@
-namespace DdsManipLib.BcCodec.SquishInternal.Bc7;
+namespace DdsManipLib.BcCodec.Bptc;
 
 internal readonly struct Bc7Mode {
     // See:
@@ -47,7 +47,7 @@ internal readonly struct Bc7Mode {
         IndexBits2Total = indexBits2Total;
     }
 
-    public static Bc7Mode GetFromModeIndex(int modeIndex) => modeIndex switch {
+    public static Bc7Mode FromModeIndex(int modeIndex) => modeIndex switch {
         0 => new(0, 3, 4, 0, 0, 4, 0, 1, 0, 3, 0, 45, 0),
         1 => new(1, 2, 6, 0, 0, 6, 0, 0, 1, 3, 0, 46, 0),
         2 => new(2, 3, 6, 0, 0, 5, 0, 0, 0, 2, 0, 29, 0),
@@ -59,13 +59,13 @@ internal readonly struct Bc7Mode {
         _ => default,
     };
 
-    public static Bc7Mode GetFromFirstByte(byte firstByte) {
+    public static Bc7Mode FromFirstByte(byte firstByte) {
         if (firstByte == 0)
             return default;
         
         var mode = 0;
         while (0 == (firstByte & (1 << mode)))
             mode++;
-        return GetFromModeIndex(mode);
+        return FromModeIndex(mode);
     }
 }

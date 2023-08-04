@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using DdsManipLib.Utilities;
 
-namespace DdsManipLib.BcCodec.SquishInternal.Bc7;
+namespace DdsManipLib.BcCodec.Bptc;
 
 internal static class Bc7Codec {
     public static void Decompress(ReadOnlySpan<byte> block, Span<byte> pixelBuffer) {
@@ -14,12 +14,6 @@ internal static class Bc7Codec {
             pixelBuffer[..64].Clear();
             return;
         }
-
-        // if( parsed.Mode.Mode == 5 )
-        // {
-        //     pixelBuffer[ ..64 ].Clear();
-        //     return;
-        // }
 
         var colorBitCount = parsed.ColorIndexBitCount;
         var alphaBitCount = parsed.AlphaIndexBitCount;
@@ -37,10 +31,10 @@ internal static class Bc7Codec {
             var alphaIndex = parsed.GetAlphaIndex(alphaBitCount, i);
 
             // determine output
-            xyzw.X = Interpolate(endpoint0.X, endpoint1.X, colorIndex, colorBitCount);
-            xyzw.Y = Interpolate(endpoint0.Y, endpoint1.Y, colorIndex, colorBitCount);
-            xyzw.Z = Interpolate(endpoint0.Z, endpoint1.Z, colorIndex, colorBitCount);
-            xyzw.W = Interpolate(endpoint0.W, endpoint1.W, alphaIndex, alphaBitCount);
+            xyzw.X = BptcConstants.Interpolate(endpoint0.X, endpoint1.X, colorIndex, colorBitCount);
+            xyzw.Y = BptcConstants.Interpolate(endpoint0.Y, endpoint1.Y, colorIndex, colorBitCount);
+            xyzw.Z = BptcConstants.Interpolate(endpoint0.Z, endpoint1.Z, colorIndex, colorBitCount);
+            xyzw.W = BptcConstants.Interpolate(endpoint0.W, endpoint1.W, alphaIndex, alphaBitCount);
 
             // rotate accordingly
             xyzw = parsed.Rotation switch {
@@ -54,14 +48,4 @@ internal static class Bc7Codec {
             pixelBuffer = pixelBuffer[4..];
         }
     }
-
-    private static byte Interpolate(byte e0, byte e1, int index, int indexPrecision) => indexPrecision switch {
-        2 => (byte) (((64 - Bc7Constants.InterpolationWeights2[index]) * e0 +
-            Bc7Constants.InterpolationWeights2[index] * e1 + 32) >> 6),
-        3 => (byte) (((64 - Bc7Constants.InterpolationWeights3[index]) * e0 +
-            Bc7Constants.InterpolationWeights3[index] * e1 + 32) >> 6),
-        4 => (byte) (((64 - Bc7Constants.InterpolationWeights4[index]) * e0 +
-            Bc7Constants.InterpolationWeights4[index] * e1 + 32) >> 6),
-        _ => e0,
-    };
 }

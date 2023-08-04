@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace DdsManipLib.Utilities;
 
-public struct Vector4<T> : IList<T>, IEquatable<Vector4<T>> where T : unmanaged {
+public struct Vector4<T> : IList<T>, IEquatable<Vector4<T>> where T : unmanaged, IBinaryInteger<T> {
     public T X;
     public T Y;
     public T Z;
@@ -20,7 +21,7 @@ public struct Vector4<T> : IList<T>, IEquatable<Vector4<T>> where T : unmanaged 
         Z = z;
         W = w;
     }
-    
+
     public Vector4(Vector3<T> v2, T w) {
         X = v2.X;
         Y = v2.Y;
@@ -146,4 +147,39 @@ public struct Vector4<T> : IList<T>, IEquatable<Vector4<T>> where T : unmanaged 
     public override string ToString() => $"<{X}, {Y}, {Z}, {W}>";
 
     public void Deconstruct(out T x, out T y, out T z, out T w) => (x, y, z, w) = (X, Y, Z, W);
+
+    public Vector4<T2> CastTruncating<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
+        new(T2.CreateTruncating(X), T2.CreateTruncating(Y), T2.CreateTruncating(Z), T2.CreateTruncating(W));
+
+    public Vector4<T2> CastSaturating<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
+        new(T2.CreateSaturating(X), T2.CreateSaturating(Y), T2.CreateSaturating(Z), T2.CreateSaturating(W));
+    
+    public Vector4<T2> CastChecked<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
+        new(T2.CreateChecked(X), T2.CreateChecked(Y), T2.CreateChecked(Z), T2.CreateChecked(W));
+
+    public static Vector4<T> operator +(Vector4<T> l) => new(+l.X, +l.Y, +l.Z, +l.W);
+    public static Vector4<T> operator -(Vector4<T> l) => new(-l.X, -l.Y, -l.Z, -l.W);
+    public static Vector4<T> operator ~(Vector4<T> l) => new(~l.X, ~l.Y, ~l.Z, ~l.W);
+    public static Vector4<T> operator +(Vector4<T> l, Vector4<T> r) => new(l.X + r.X, l.Y + r.Y, l.Z + r.Z, l.W + r.W);
+    public static Vector4<T> operator -(Vector4<T> l, Vector4<T> r) => new(l.X - r.X, l.Y - r.Y, l.Z - r.Z, l.W - r.W);
+    public static Vector4<T> operator *(Vector4<T> l, Vector4<T> r) => new(l.X * r.X, l.Y * r.Y, l.Z * r.Z, l.W * r.W);
+    public static Vector4<T> operator /(Vector4<T> l, Vector4<T> r) => new(l.X / r.X, l.Y / r.Y, l.Z / r.Z, l.W / r.W);
+    public static Vector4<T> operator %(Vector4<T> l, Vector4<T> r) => new(l.X % r.X, l.Y % r.Y, l.Z % r.Z, l.W % r.W);
+    public static Vector4<T> operator &(Vector4<T> l, Vector4<T> r) => new(l.X & r.X, l.Y & r.Y, l.Z & r.Z, l.W & r.W);
+    public static Vector4<T> operator |(Vector4<T> l, Vector4<T> r) => new(l.X | r.X, l.Y | r.Y, l.Z | r.Z, l.W | r.W);
+    public static Vector4<T> operator ^(Vector4<T> l, Vector4<T> r) => new(l.X ^ r.X, l.Y ^ r.Y, l.Z ^ r.Z, l.W ^ r.W);
+    public static Vector4<T> operator << (Vector4<T> l, Vector4<int> r) => new(l.X << r.X, l.Y << r.Y, l.Z << r.Z, l.W << r.W);
+    public static Vector4<T> operator >> (Vector4<T> l, Vector4<int> r) => new(l.X >> r.X, l.Y >> r.Y, l.Z >> r.Z, l.W >> r.W);
+    public static Vector4<T> operator >>> (Vector4<T> l, Vector4<int> r) => new(l.X >>> r.X, l.Y >>> r.Y, l.Z >>> r.Z, l.W >>> r.W);
+    public static Vector4<T> operator +(Vector4<T> l, T r) => new(l.X + r, l.Y + r, l.Z + r, l.W + r);
+    public static Vector4<T> operator -(Vector4<T> l, T r) => new(l.X - r, l.Y - r, l.Z - r, l.W - r);
+    public static Vector4<T> operator *(Vector4<T> l, T r) => new(l.X * r, l.Y * r, l.Z * r, l.W * r);
+    public static Vector4<T> operator /(Vector4<T> l, T r) => new(l.X / r, l.Y / r, l.Z / r, l.W / r);
+    public static Vector4<T> operator %(Vector4<T> l, T r) => new(l.X % r, l.Y % r, l.Z % r, l.W % r);
+    public static Vector4<T> operator &(Vector4<T> l, T r) => new(l.X & r, l.Y & r, l.Z & r, l.W & r);
+    public static Vector4<T> operator |(Vector4<T> l, T r) => new(l.X | r, l.Y | r, l.Z | r, l.W | r);
+    public static Vector4<T> operator ^(Vector4<T> l, T r) => new(l.X ^ r, l.Y ^ r, l.Z ^ r, l.W ^ r);
+    public static Vector4<T> operator << (Vector4<T> l, int r) => new(l.X << r, l.Y << r, l.Z << r, l.W << r);
+    public static Vector4<T> operator >> (Vector4<T> l, int r) => new(l.X >> r, l.Y >> r, l.Z >> r, l.W >> r);
+    public static Vector4<T> operator >>> (Vector4<T> l, int r) => new(l.X >>> r, l.Y >>> r, l.Z >>> r, l.W >>> r);
 }

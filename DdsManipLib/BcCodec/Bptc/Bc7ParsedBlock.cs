@@ -2,14 +2,7 @@ using System;
 using System.Diagnostics;
 using DdsManipLib.Utilities;
 
-namespace DdsManipLib.BcCodec.SquishInternal.Bc7;
-
-internal enum Bc7RotationMode : byte {
-    NoChange = 0,
-    SwapAlphaRed = 1,
-    SwapAlphaGreen = 2,
-    SwapAlphaBlue = 3,
-}
+namespace DdsManipLib.BcCodec.Bptc;
 
 internal unsafe ref struct Bc7ParsedBlock {
     public const int MaxNumEndpoints = 6;
@@ -34,7 +27,7 @@ internal unsafe ref struct Bc7ParsedBlock {
     public bool ReadBlock(ReadOnlySpan<byte> block) {
         var bsr = new ByteSpanBitReader(block);
 
-        Mode = Bc7Mode.GetFromFirstByte(block[0]);
+        Mode = Bc7Mode.FromFirstByte(block[0]);
         if (Mode.Subsets == 0)
             return false;
         bsr.Offset = Mode.Mode + 1;
@@ -191,10 +184,9 @@ internal unsafe ref struct Bc7ParsedBlock {
     /// Decrements bitCount by one if index is one of the anchor indices.
     /// </summary>
     public int GetIndexBitCount(int bitCount, int index) {
-        if (index == 0)
-            return bitCount - 1;
-
         switch (Mode.Subsets) {
+            case var _ when index is 0:
+                return bitCount - 1;
             case 2:
                 var anchorIndex = Bc7Constants.Subsets2AnchorIndices2[PartitionIndex];
                 if (index == anchorIndex)

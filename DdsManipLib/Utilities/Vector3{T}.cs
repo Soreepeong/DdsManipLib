@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace DdsManipLib.Utilities;
 
-public struct Vector3<T> : IList<T>, IEquatable<Vector3<T>> where T : unmanaged {
+public struct Vector3<T> : IList<T>, IEquatable<Vector3<T>> where T : unmanaged, IBinaryInteger<T> {
     public T X;
     public T Y;
     public T Z;
@@ -125,4 +126,39 @@ public struct Vector3<T> : IList<T>, IEquatable<Vector3<T>> where T : unmanaged 
     public override string ToString() => $"<{X}, {Y}, {Z}>";
 
     public void Deconstruct(out T x, out T y, out T z) => (x, y, z) = (X, Y, Z);
+    
+    public Vector3<T2> CastTruncating<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
+        new(T2.CreateTruncating(X), T2.CreateTruncating(Y), T2.CreateTruncating(Z));
+
+    public Vector3<T2> CastSaturating<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
+        new(T2.CreateSaturating(X), T2.CreateSaturating(Y), T2.CreateSaturating(Z));
+    
+    public Vector3<T2> CastChecked<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
+        new(T2.CreateChecked(X), T2.CreateChecked(Y), T2.CreateChecked(Z));
+
+    public static Vector3<T> operator +(Vector3<T> l) => new(+l.X, +l.Y, +l.Z);
+    public static Vector3<T> operator -(Vector3<T> l) => new(-l.X, -l.Y, -l.Z);
+    public static Vector3<T> operator ~(Vector3<T> l) => new(~l.X, ~l.Y, ~l.Z);
+    public static Vector3<T> operator +(Vector3<T> l, Vector3<T> r) => new(l.X + r.X, l.Y + r.Y, l.Z + r.Z);
+    public static Vector3<T> operator -(Vector3<T> l, Vector3<T> r) => new(l.X - r.X, l.Y - r.Y, l.Z - r.Z);
+    public static Vector3<T> operator *(Vector3<T> l, Vector3<T> r) => new(l.X * r.X, l.Y * r.Y, l.Z * r.Z);
+    public static Vector3<T> operator /(Vector3<T> l, Vector3<T> r) => new(l.X / r.X, l.Y / r.Y, l.Z / r.Z);
+    public static Vector3<T> operator %(Vector3<T> l, Vector3<T> r) => new(l.X % r.X, l.Y % r.Y, l.Z % r.Z);
+    public static Vector3<T> operator &(Vector3<T> l, Vector3<T> r) => new(l.X & r.X, l.Y & r.Y, l.Z & r.Z);
+    public static Vector3<T> operator |(Vector3<T> l, Vector3<T> r) => new(l.X | r.X, l.Y | r.Y, l.Z | r.Z);
+    public static Vector3<T> operator ^(Vector3<T> l, Vector3<T> r) => new(l.X ^ r.X, l.Y ^ r.Y, l.Z ^ r.Z);
+    public static Vector3<T> operator << (Vector3<T> l, Vector3<int> r) => new(l.X << r.X, l.Y << r.Y, l.Z << r.Z);
+    public static Vector3<T> operator >> (Vector3<T> l, Vector3<int> r) => new(l.X >> r.X, l.Y >> r.Y, l.Z >> r.Z);
+    public static Vector3<T> operator >>> (Vector3<T> l, Vector3<int> r) => new(l.X >>> r.X, l.Y >>> r.Y, l.Z >>> r.Z);
+    public static Vector3<T> operator +(Vector3<T> l, T r) => new(l.X + r, l.Y + r, l.Z + r);
+    public static Vector3<T> operator -(Vector3<T> l, T r) => new(l.X - r, l.Y - r, l.Z - r);
+    public static Vector3<T> operator *(Vector3<T> l, T r) => new(l.X * r, l.Y * r, l.Z * r);
+    public static Vector3<T> operator /(Vector3<T> l, T r) => new(l.X / r, l.Y / r, l.Z / r);
+    public static Vector3<T> operator %(Vector3<T> l, T r) => new(l.X % r, l.Y % r, l.Z % r);
+    public static Vector3<T> operator &(Vector3<T> l, T r) => new(l.X & r, l.Y & r, l.Z & r);
+    public static Vector3<T> operator |(Vector3<T> l, T r) => new(l.X | r, l.Y | r, l.Z | r);
+    public static Vector3<T> operator ^(Vector3<T> l, T r) => new(l.X ^ r, l.Y ^ r, l.Z ^ r);
+    public static Vector3<T> operator << (Vector3<T> l, int r) => new(l.X << r, l.Y << r, l.Z << r);
+    public static Vector3<T> operator >> (Vector3<T> l, int r) => new(l.X >> r, l.Y >> r, l.Z >> r);
+    public static Vector3<T> operator >>> (Vector3<T> l, int r) => new(l.X >>> r, l.Y >>> r, l.Z >>> r);
 }

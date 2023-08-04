@@ -56,6 +56,22 @@ public enum SquishMethod {
     /// Assumes <see cref="sbyte"/> as channel values.
     /// </summary>
     Bc5S,
+    
+    /// <summary>
+    /// Use unsigned BC6H (BPTC BC6H) compression.
+    /// Uses three channels: R, G, and B.
+    ///
+    /// Assumes <see cref="float"/> as channel values.
+    /// </summary>
+    Bc6U,
+    
+    /// <summary>
+    /// Use signed BC6H (BPTC BC6H) compression.
+    /// Uses three channels: R, G, and B.
+    ///
+    /// Assumes <see cref="float"/> as channel values.
+    /// </summary>
+    Bc6S,
 
     /// <summary>
     /// Use BC7 (BPTC BC7) compression.

@@ -1,6 +1,6 @@
 using System;
 using System.Diagnostics;
-using DdsManipLib.BcCodec.SquishInternal.Bc7;
+using DdsManipLib.BcCodec.Bptc;
 using DdsManipLib.Utilities;
 
 namespace DdsManipLib.BcCodec.SquishInternal;
@@ -96,32 +96,24 @@ internal unsafe struct BlockDecompresser {
 
             var (r, g, b, a) = _options.ChannelOffsets;
 
-            var availHorzBytes = Math.Min(4, width - x0) * 4;
+            var availHorzChannels = Math.Min(4, width - x0) * 4;
             var availVertPixels = Math.Min(4, height - y0);
 
             for (int by = 0, y = y0; by < availVertPixels; by++, y++) {
                 var rgbaRow = rgba[(by * 16)..];
                 var pixelsRow = pixels[(stride * y + p * x0)..];
                 if (r < p)
-                    for (int rgbaOffset = 0, pixelOffset = r;
-                         rgbaOffset < availHorzBytes;
-                         rgbaOffset += 4, pixelOffset += p)
-                        pixelsRow[pixelOffset] = rgbaRow[rgbaOffset];
+                    for (int i = 0, j = r; i < availHorzChannels; i += 4, j += p)
+                        pixelsRow[j] = rgbaRow[i];
                 if (g < p)
-                    for (int rgbaOffset = 1, pixelOffset = g;
-                         rgbaOffset < availHorzBytes;
-                         rgbaOffset += 4, pixelOffset += p)
-                        pixelsRow[pixelOffset] = rgbaRow[rgbaOffset];
+                    for (int i = 1, j = g; i < availHorzChannels; i += 4, j += p)
+                        pixelsRow[j] = rgbaRow[i];
                 if (b < p)
-                    for (int rgbaOffset = 2, pixelOffset = b;
-                         rgbaOffset < availHorzBytes;
-                         rgbaOffset += 4, pixelOffset += p)
-                        pixelsRow[pixelOffset] = rgbaRow[rgbaOffset];
+                    for (int i = 2, j = b; i < availHorzChannels; i += 4, j += p)
+                        pixelsRow[j] = rgbaRow[i];
                 if (a < p)
-                    for (int rgbaOffset = 3, pixelOffset = a;
-                         rgbaOffset < availHorzBytes;
-                         rgbaOffset += 4, pixelOffset += p)
-                        pixelsRow[pixelOffset] = rgbaRow[rgbaOffset];
+                    for (int i = 3, j = a; i < availHorzChannels; i += 4, j += p)
+                        pixelsRow[j] = rgbaRow[i];
             }
         }
     }
