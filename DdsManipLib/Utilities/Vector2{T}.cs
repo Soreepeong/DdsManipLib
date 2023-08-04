@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace DdsManipLib.Utilities;
 
-public struct Vector2<T> : IList<T>, IEquatable<Vector2<T>> where T : unmanaged, IBinaryInteger<T> {
+public struct Vector2<T> : IList<T>, IEquatable<Vector2<T>> where T : unmanaged, IBinaryNumber<T> {
     public T X;
     public T Y;
 
@@ -105,16 +105,16 @@ public struct Vector2<T> : IList<T>, IEquatable<Vector2<T>> where T : unmanaged,
     public override string ToString() => $"<{X}, {Y}>";
 
     public void Deconstruct(out T x, out T y) => (x, y) = (X, Y);
-    
+
     public Vector2<T2> CastTruncating<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
         new(T2.CreateTruncating(X), T2.CreateTruncating(Y));
 
     public Vector2<T2> CastSaturating<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
         new(T2.CreateSaturating(X), T2.CreateSaturating(Y));
-    
+
     public Vector2<T2> CastChecked<T2>() where T2 : unmanaged, IBinaryInteger<T2> =>
         new(T2.CreateChecked(X), T2.CreateChecked(Y));
-    
+
     public static Vector2<T> operator +(Vector2<T> l) => new(+l.X, +l.Y);
     public static Vector2<T> operator -(Vector2<T> l) => new(-l.X, -l.Y);
     public static Vector2<T> operator ~(Vector2<T> l) => new(~l.X, ~l.Y);
@@ -126,9 +126,6 @@ public struct Vector2<T> : IList<T>, IEquatable<Vector2<T>> where T : unmanaged,
     public static Vector2<T> operator &(Vector2<T> l, Vector2<T> r) => new(l.X & r.X, l.Y & r.Y);
     public static Vector2<T> operator |(Vector2<T> l, Vector2<T> r) => new(l.X | r.X, l.Y | r.Y);
     public static Vector2<T> operator ^(Vector2<T> l, Vector2<T> r) => new(l.X ^ r.X, l.Y ^ r.Y);
-    public static Vector2<T> operator << (Vector2<T> l, Vector2<int> r) => new(l.X << r.X, l.Y << r.Y);
-    public static Vector2<T> operator >> (Vector2<T> l, Vector2<int> r) => new(l.X >> r.X, l.Y >> r.Y);
-    public static Vector2<T> operator >>> (Vector2<T> l, Vector2<int> r) => new(l.X >>> r.X, l.Y >>> r.Y);
     public static Vector2<T> operator +(Vector2<T> l, T r) => new(l.X + r, l.Y + r);
     public static Vector2<T> operator -(Vector2<T> l, T r) => new(l.X - r, l.Y - r);
     public static Vector2<T> operator *(Vector2<T> l, T r) => new(l.X * r, l.Y * r);
@@ -137,7 +134,4 @@ public struct Vector2<T> : IList<T>, IEquatable<Vector2<T>> where T : unmanaged,
     public static Vector2<T> operator &(Vector2<T> l, T r) => new(l.X & r, l.Y & r);
     public static Vector2<T> operator |(Vector2<T> l, T r) => new(l.X | r, l.Y | r);
     public static Vector2<T> operator ^(Vector2<T> l, T r) => new(l.X ^ r, l.Y ^ r);
-    public static Vector2<T> operator << (Vector2<T> l, int r) => new(l.X << r, l.Y << r);
-    public static Vector2<T> operator >> (Vector2<T> l, int r) => new(l.X >> r, l.Y >> r);
-    public static Vector2<T> operator >>> (Vector2<T> l, int r) => new(l.X >>> r, l.Y >>> r);
 }

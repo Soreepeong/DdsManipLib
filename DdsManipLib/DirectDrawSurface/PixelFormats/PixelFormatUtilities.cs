@@ -8,18 +8,43 @@ using System.Reflection;
 using DdsManipLib.DirectDrawSurface.PixelFormats.BlockPixelFormats;
 using DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
-#pragma warning disable CS1591
-
 namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 
+/// <summary>
+/// Miscellaneous utility functions on <see cref="IPixelFormat"/>.
+/// </summary>
 public static class PixelFormatUtilities {
+    /// <summary>
+    /// Matrix for converting RGB to BT.601 YCbCr.
+    /// </summary>
+    public static readonly Matrix4x4 RgbToYuvBt601 =
+        new(0.299f, 0.587f, 0.114f, 0f, -0.168736f, -0.331264f, 0.5f, 0f, 0.5f, -0.418688f, 0.081312f, 0f, 0f, 0f, 0f, 1f);
+
+    /// <summary>
+    /// Matrix for converting BT.601 YCbCr to RGB.
+    /// </summary>
+    public static readonly Matrix4x4 YuvToRgbBt601 =
+        new(1f, 0f, 1.042f, 0f, 1f, -0.344136f, -0.714136f, 0f, 1f, 1.772f, 0f, 0f, 0f, 0f, 0f, 1f);
+
+    /// <summary>
+    /// Matrix for converting RGB to BT.709 YCbCr.
+    /// </summary>
+    public static readonly Matrix4x4 RgbToYuvBt709 =
+        new(0.2126f, 0.7152f, 0.0722f, 0f, -0.1146f, -0.3854f, 0.5f, 0f, 0.5f, -0.4542f, -0.0458f, 0f, 0f, 0f, 0f, 1f);
+
+    /// <summary>
+    /// Matrix for converting BT.709 YCbCr to RGB.
+    /// </summary>
+    public static readonly Matrix4x4 YuvToRgbBt709 =
+        new(1f, 0f, 1.5748f, 0f, 1f, -0.1873f, -0.4681f, 0f, 1f, 1.8556f, 0f, 0f, 0f, 0f, 0f, 1f);
+
     private static readonly IReadOnlyDictionary<Tuple<AlphaType, DxgiFormat>, IPixelFormat> DxgiToPixelFormatMap;
     private static readonly IReadOnlyDictionary<DdsPixelFormat, IPixelFormat> DdspfToPixelFormatMap;
 
     static PixelFormatUtilities() {
-        var type = typeof(IPixelFormat);
+        const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        var type = typeof(IPixelFormat);
         var opaquePixelFormats = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(s => s.GetTypes())
             .Where(p => type.IsAssignableFrom(p) && p is {IsClass: true, IsAbstract: false})
@@ -48,6 +73,13 @@ public static class PixelFormatUtilities {
             .ToImmutableDictionary(x => x.DdsPixelFormat, x => x);
     }
 
+    /// <summary>
+    /// Attempt to translate the given <see cref="DxgiFormat"/> to a corresponding <see cref="IPixelFormat"/>.
+    /// </summary>
+    /// <param name="dxgiFormat">The DXGI format.</param>
+    /// <param name="alphaType">Alpha type to query. Multiple values can be set, in which case, the enum value with the least value will be tested first.</param>
+    /// <param name="pixelFormat">Corresponding <see cref="IPixelFormat"/> if found. Otherwise, the value is undefined.</param>
+    /// <returns>True if the corresponding <see cref="IPixelFormat"/> was found.</returns>
     public static bool TryGetPixelFormat(this DxgiFormat dxgiFormat, AlphaType alphaType, [MaybeNullWhen(false)] out IPixelFormat pixelFormat) {
         if (alphaType is AlphaType.None)
             return DxgiToPixelFormatMap.TryGetValue(Tuple.Create(alphaType, dxgiFormat), out pixelFormat);
@@ -61,6 +93,12 @@ public static class PixelFormatUtilities {
         return false;
     }
 
+    /// <summary>
+    /// Attempt to translate the given <see cref="DdsPixelFormat"/> to a corresponding <see cref="IPixelFormat"/>.
+    /// </summary>
+    /// <param name="ddspf">The DDS pixel format.</param>
+    /// <param name="pixelFormat">Corresponding <see cref="IPixelFormat"/> if found. Otherwise, the value is undefined.</param>
+    /// <returns>True if the corresponding <see cref="IPixelFormat"/> was found.</returns>
     public static bool TryGetPixelFormat(this DdsPixelFormat ddspf, [MaybeNullWhen(false)] out IPixelFormat pixelFormat) {
         if (DdspfToPixelFormatMap.TryGetValue(ddspf, out pixelFormat))
             return true;
@@ -82,11 +120,18 @@ public static class PixelFormatUtilities {
         var maxBits = Math.Max(rbits, Math.Max(gbits, Math.Max(bbits, abits)));
 
         if (ddspf.Flags.HasFlag(DdsPixelFormatFlags.Rgb)) {
-            if (abits != 0)
+            if (abits != 0 && (rbits | gbits | bbits) != 0)
                 pixelFormat = maxBits switch {
                     <= 8 => new DdspfRxGxBxAxUNormPixelFormat<byte>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits, ashift, abits),
                     <= 16 => new DdspfRxGxBxAxUNormPixelFormat<ushort>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits, ashift, abits),
                     <= 32 => new DdspfRxGxBxAxUNormPixelFormat<uint>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits, ashift, abits),
+                    _ => throw new InvalidOperationException(),
+                };
+            else if (abits != 0)
+                pixelFormat = maxBits switch {
+                    <= 8 => new DdspfAxUNormPixelFormat<byte>(ddspf.RgbBitCount, ashift, abits),
+                    <= 16 => new DdspfAxUNormPixelFormat<ushort>(ddspf.RgbBitCount, ashift, abits),
+                    <= 32 => new DdspfAxUNormPixelFormat<uint>(ddspf.RgbBitCount, ashift, abits),
                     _ => throw new InvalidOperationException(),
                 };
             else if (bbits != 0)
@@ -123,13 +168,57 @@ public static class PixelFormatUtilities {
         }
 
         if (ddspf.Flags.HasFlag(DdsPixelFormatFlags.Yuv)) {
-            return false;
-            // TODO: return true;
+            if (abits != 0 && (rbits | gbits | bbits) != 0)
+                pixelFormat = maxBits switch {
+                    <= 8 => new DdspfYxUxVxAxUNormPixelFormat<byte>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits, ashift, abits),
+                    <= 16 => new DdspfYxUxVxAxUNormPixelFormat<ushort>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits, ashift, abits),
+                    <= 32 => new DdspfYxUxVxAxUNormPixelFormat<uint>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits, ashift, abits),
+                    _ => throw new InvalidOperationException(),
+                };
+            else if (abits != 0)
+                pixelFormat = maxBits switch {
+                    <= 8 => new DdspfAxUNormPixelFormat<byte>(ddspf.RgbBitCount, ashift, abits),
+                    <= 16 => new DdspfAxUNormPixelFormat<ushort>(ddspf.RgbBitCount, ashift, abits),
+                    <= 32 => new DdspfAxUNormPixelFormat<uint>(ddspf.RgbBitCount, ashift, abits),
+                    _ => throw new InvalidOperationException(),
+                };
+            else if ((rbits | gbits | bbits) != 0)
+                pixelFormat = maxBits switch {
+                    <= 8 => new DdspfYxUxVxUNormPixelFormat<byte>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits),
+                    <= 16 => new DdspfYxUxVxUNormPixelFormat<ushort>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits),
+                    <= 32 => new DdspfYxUxVxUNormPixelFormat<uint>(ddspf.RgbBitCount, rshift, rbits, gshift, gbits, bshift, bbits),
+                    _ => throw new InvalidOperationException(),
+                };
+            else
+                return false;
+            return true;
         }
 
         if (ddspf.Flags.HasFlag(DdsPixelFormatFlags.Luminance)) {
-            return false;
-            // TODO: return true;
+            if (abits != 0 && rbits != 0)
+                pixelFormat = maxBits switch {
+                    <= 8 => new DdspfLxAxUNormPixelFormat<byte>(ddspf.RgbBitCount, rshift, rbits, ashift, abits),
+                    <= 16 => new DdspfLxAxUNormPixelFormat<ushort>(ddspf.RgbBitCount, rshift, rbits, ashift, abits),
+                    <= 32 => new DdspfLxAxUNormPixelFormat<uint>(ddspf.RgbBitCount, rshift, rbits, ashift, abits),
+                    _ => throw new InvalidOperationException(),
+                };
+            else if (abits != 0)
+                pixelFormat = maxBits switch {
+                    <= 8 => new DdspfAxUNormPixelFormat<byte>(ddspf.RgbBitCount, ashift, abits),
+                    <= 16 => new DdspfAxUNormPixelFormat<ushort>(ddspf.RgbBitCount, ashift, abits),
+                    <= 32 => new DdspfAxUNormPixelFormat<uint>(ddspf.RgbBitCount, ashift, abits),
+                    _ => throw new InvalidOperationException(),
+                };
+            else if (rbits != 0)
+                pixelFormat = maxBits switch {
+                    <= 8 => new DdspfLxUNormPixelFormat<byte>(ddspf.RgbBitCount, rshift, rbits),
+                    <= 16 => new DdspfLxUNormPixelFormat<ushort>(ddspf.RgbBitCount, rshift, rbits),
+                    <= 32 => new DdspfLxUNormPixelFormat<uint>(ddspf.RgbBitCount, rshift, rbits),
+                    _ => throw new InvalidOperationException(),
+                };
+            else
+                return false;
+            return true;
         }
 
         if (ddspf.Flags.HasFlag(DdsPixelFormatFlags.Alpha)) {
@@ -145,6 +234,13 @@ public static class PixelFormatUtilities {
         return false;
     }
 
+    /// <summary>
+    /// Deconstruct a bitmask into bit shift offset and number of bits.
+    /// </summary>
+    /// <param name="mask">The bitmask to deconstruct.</param>
+    /// <param name="shift">Determined bit shift offset.</param>
+    /// <param name="bits">Determined number of bits.</param>
+    /// <returns>True if the mask can be reconstructed from the determined bit shift offset and number of bits.</returns>
     public static bool DeconstructMask(uint mask, out int shift, out int bits) {
         shift = BitOperations.TrailingZeroCount(mask);
         bits = BitOperations.PopCount(mask);
@@ -152,6 +248,12 @@ public static class PixelFormatUtilities {
         return mask == mask2;
     }
 
+    /// <summary>
+    /// Translate a raw <see cref="uint"/> containing a SInt value into <see cref="int"/> value. 
+    /// </summary>
+    /// <param name="rawValue">The raw value.</param>
+    /// <param name="sourceBits">Number of bits used for representing the SInt value.</param>
+    /// <returns>The translated int value, fully bit-extended.</returns>
     public static int RawToSInt(uint rawValue, int sourceBits) {
         var signMask = 1u << (sourceBits - 1);
         var numberMask = signMask - 1;
@@ -160,6 +262,13 @@ public static class PixelFormatUtilities {
         return (int) (~numberMask | (rawValue & numberMask));
     }
 
+    /// <summary>
+    /// Translate a <see cref="int"/> value into a <see cref="uint"/> value containing a SInt value.
+    /// </summary>
+    /// <param name="intValue">The integer value.</param>
+    /// <param name="sourceBits">Number of bits to use for SInt representation.</param>
+    /// <returns>The translated SInt value.</returns>
+    /// <remarks>The value will be truncated/clamped if the number exceeds the range of representable values for the given number of bits for SInt.</remarks>
     public static uint SIntToRaw(int intValue, int sourceBits) {
         var maxValue = (1 << (sourceBits - 1)) - 1;
         var minValue = -(1 << (sourceBits - 1));
@@ -170,11 +279,29 @@ public static class PixelFormatUtilities {
         return (uint) intValue & ((1u << sourceBits) - 1u);
     }
 
+    /// <summary>
+    /// Translate a <see cref="uint"/> value containig UInt value to a clamped <see cref="uint"/> value for the given number of bits for UInt representation.
+    /// </summary>
+    /// <param name="uintValue">The unsigned integer value.</param>
+    /// <param name="sourceBits">Number of bits to use for UInt representation.</param>
+    /// <returns>The translated UInt value.</returns>
+    /// <remarks>The value will be truncated/clamped if the number exceeds the range of representable values for the given number of bits for UInt.</remarks>
     public static uint UIntToRaw(uint uintValue, int sourceBits) {
         var maxValue = (1u << sourceBits) - 1;
         return uintValue > maxValue ? maxValue : uintValue;
     }
 
+    /// <summary>
+    /// Translate the given byte span into another, from a pixel format to another.
+    /// </summary>
+    /// <param name="sourcePixelFormat">Source pixel format.</param>
+    /// <param name="sourceSpan">Byte span containing source data.</param>
+    /// <param name="width">Width of the image.</param>
+    /// <param name="height">Height of the image.</param>
+    /// <param name="targetPixelFormat">Target pixel format.</param>
+    /// <param name="targetSpan">Byte span for translated data.</param>
+    /// <param name="scratchBuffer">If a temporary byte array is required, the given byte array may be used as a scratch buffer.</param>
+    /// <returns>Whether the operation was supported and successful.</returns>
     public static bool ConvertToAuto(
         this IPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
@@ -192,8 +319,7 @@ public static class PixelFormatUtilities {
             case IRawPixelFormat rawS: {
                 switch (targetPixelFormat) {
                     case IRawPixelFormat rawT:
-                        ConvertTo(rawS, sourceSpan, width, height, rawT, targetSpan);
-                        return true;
+                        return ConvertTo(rawS, sourceSpan, width, height, rawT, targetSpan);
                     case IBlockPixelFormat blockT:
                         if (blockT.SupportsRawPixelFormat(rawS)) {
                             blockT.Compress(rawS, sourceSpan, width, height, targetSpan);
@@ -202,7 +328,8 @@ public static class PixelFormatUtilities {
                             var tmplen = rawpf.CalculateLinearSize(width, height);
                             if (scratchBuffer is null || scratchBuffer.Length < tmplen)
                                 scratchBuffer = new byte[tmplen];
-                            ConvertTo(rawS, sourceSpan, width, height, rawpf, scratchBuffer);
+                            if (!ConvertTo(rawS, sourceSpan, width, height, rawpf, scratchBuffer))
+                                return false;
                             blockT.Compress(rawpf, scratchBuffer, width, height, targetSpan);
                         }
 
@@ -217,14 +344,16 @@ public static class PixelFormatUtilities {
             case IBlockPixelFormat blockS: {
                 switch (targetPixelFormat) {
                     case IRawPixelFormat rawT:
-                        if (blockS.SupportsRawPixelFormat(rawT)) { } else {
+                        if (blockS.SupportsRawPixelFormat(rawT)) {
+                            blockS.Decompress(rawT, sourceSpan, width, height, targetSpan);
+                        } else {
                             var rawpf = blockS.SuggestedRawPixelFormat;
                             var tmplen = rawpf.CalculateLinearSize(width, height);
                             if (scratchBuffer is null || scratchBuffer.Length < tmplen)
                                 scratchBuffer = new byte[tmplen];
 
                             blockS.Decompress(rawpf, sourceSpan, width, height, scratchBuffer);
-                            ConvertTo(rawpf, scratchBuffer, width, height, rawT, targetSpan);
+                            return ConvertTo(rawpf, scratchBuffer, width, height, rawT, targetSpan);
                         }
 
                         return true;
@@ -251,6 +380,17 @@ public static class PixelFormatUtilities {
         }
     }
 
+    /// <summary>
+    /// Translate the given byte span into another, from a pixel format to another.
+    /// </summary>
+    /// <param name="sourcePixelFormat">Source pixel format.</param>
+    /// <param name="sourceSpan">Byte span containing source data.</param>
+    /// <param name="width">Width of the image.</param>
+    /// <param name="height">Height of the image.</param>
+    /// <param name="targetPixelFormat">Target pixel format.</param>
+    /// <param name="targetSpan">Byte span for translated data.</param>
+    /// <returns>Whether the operation was supported and successful.</returns>
+    /// <remarks>Consider using <see cref="ConvertToAuto(DdsManipLib.DirectDrawSurface.PixelFormats.IPixelFormat,System.ReadOnlySpan{byte},int,int,DdsManipLib.DirectDrawSurface.PixelFormats.IPixelFormat,System.Span{byte},ref byte[])"/> if there are multiple images to convert.</remarks>
     public static bool ConvertToAuto(
         this IPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
@@ -262,7 +402,7 @@ public static class PixelFormatUtilities {
         return ConvertToAuto(sourcePixelFormat, sourceSpan, width, height, targetPixelFormat, targetSpan, ref tmp);
     }
 
-    public static void ConvertTo(
+    private static bool ConvertTo(
         IRawPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -272,32 +412,160 @@ public static class PixelFormatUtilities {
         switch (sourcePixelFormat) {
             case IRawRgbaPixelFormat rgba1 when targetPixelFormat is IRawRgbaPixelFormat rgba2:
                 ConvertTo(rgba1, sourceSpan, width, height, rgba2, targetSpan);
-                break;
+                return true;
+            case IRawRgbaPixelFormat rgba1 when targetPixelFormat is IRawLaPixelFormat la2:
+                ConvertToAny(rgba1, sourceSpan, width, height, la2, targetSpan, (s, t) => la2.SetLa(t, new(rgba1.GetRgb(s).Average(), rgba1.GetAlpha(s))));
+                return true;
+            case IRawRgbaPixelFormat rgba1 when targetPixelFormat is IRawYuvaPixelFormat yuva2:
+                ConvertToAny(rgba1, sourceSpan, width, height, yuva2, targetSpan, (s, t) => yuva2.SetRgbaBt601(t, rgba1.GetRgba(s)));
+                return true;
+
             case IRawRgbPixelFormat rgb1 when targetPixelFormat is IRawRgbPixelFormat rgb2:
                 ConvertTo(rgb1, sourceSpan, width, height, rgb2, targetSpan);
-                break;
+                return true;
+            case IRawRgbPixelFormat rgb1 when targetPixelFormat is IRawYuvPixelFormat yuv2:
+                ConvertToAny(rgb1, sourceSpan, width, height, yuv2, targetSpan, (s, t) => yuv2.SetRgbBt601(t, rgb1.GetRgb(s)));
+                return true;
+            case IRawRgbPixelFormat rgb1 when targetPixelFormat is IRawLPixelFormat l2:
+                ConvertToAny(rgb1, sourceSpan, width, height, l2, targetSpan, (s, t) => l2.SetLuminance(t, rgb1.GetRgb(s).Average()));
+                return true;
+
             case IRawRgPixelFormat rg1 when targetPixelFormat is IRawRgPixelFormat rg2:
                 ConvertTo(rg1, sourceSpan, width, height, rg2, targetSpan);
-                break;
-            case IRawGPixelFormat g1 when targetPixelFormat is IRawGPixelFormat g2:
-                ConvertTo(g1, sourceSpan, width, height, g2, targetSpan);
-                break;
+                return true;
+            case IRawRgPixelFormat rg1 when targetPixelFormat is IRawLaPixelFormat la2:
+                ConvertToAny(rg1, sourceSpan, width, height, la2, targetSpan, (s, t) => la2.SetLa(t, rg1.GetRg(s)));
+                return true;
+            case IRawRgPixelFormat rg1 when targetPixelFormat is IRawLPixelFormat l2:
+                ConvertToAny(rg1, sourceSpan, width, height, l2, targetSpan, (s, t) => l2.SetLuminance(t, rg1.GetRg(s).Average()));
+                return true;
+
             case IRawRPixelFormat r1 when targetPixelFormat is IRawRPixelFormat r2:
                 ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
-                break;
-            case IRawAPixelFormat a1 when targetPixelFormat is IRawAPixelFormat a2:
-                ConvertTo(a1, sourceSpan, width, height, a2, targetSpan);
-                break;
+                return true;
+            case IRawRPixelFormat r1 when targetPixelFormat is IRawLPixelFormat l2:
+                ConvertToAny(r1, sourceSpan, width, height, l2, targetSpan, (s, t) => l2.SetLuminance(t, r1.GetRed(s)));
+                return true;
+            case IRawRPixelFormat r1 when targetPixelFormat is IRawAPixelFormat a2:
+                ConvertToAny(r1, sourceSpan, width, height, a2, targetSpan, (s, t) => a2.SetAlpha(t, r1.GetRed(s)));
+                return true;
+
+            case IRawGPixelFormat g1 when targetPixelFormat is IRawGPixelFormat g2:
+                ConvertTo(g1, sourceSpan, width, height, g2, targetSpan);
+                return true;
+            case IRawGPixelFormat g1 when targetPixelFormat is IRawLPixelFormat l2:
+                ConvertToAny(g1, sourceSpan, width, height, l2, targetSpan, (s, t) => l2.SetLuminance(t, g1.GetGreen(s)));
+                return true;
+            case IRawGPixelFormat g1 when targetPixelFormat is IRawAPixelFormat a2:
+                ConvertToAny(g1, sourceSpan, width, height, a2, targetSpan, (s, t) => a2.SetAlpha(t, g1.GetGreen(s)));
+                return true;
+
+            case IRawDsPixelFormat ds1 when targetPixelFormat is IRawDsPixelFormat ds2:
+                ConvertTo(ds1, sourceSpan, width, height, ds2, targetSpan);
+                return true;
+            case IRawDsPixelFormat ds1 when targetPixelFormat is IRawGPixelFormat g2:
+                ConvertTo(ds1, sourceSpan, width, height, g2, targetSpan);
+                return true;
+            case IRawDsPixelFormat ds1 when targetPixelFormat is IRawRgPixelFormat rg2:
+                ConvertTo(ds1, sourceSpan, width, height, rg2, targetSpan);
+                return true;
+            case IRawDsPixelFormat ds1 when targetPixelFormat is IRawLaPixelFormat la2:
+                ConvertToAny(ds1, sourceSpan, width, height, la2, targetSpan, (s, t) => la2.SetLa(t, ds1.GetDs(s)));
+                return true;
+
             case IRawDPixelFormat d1 when targetPixelFormat is IRawDPixelFormat d2:
                 ConvertTo(d1, sourceSpan, width, height, d2, targetSpan);
-                break;
-            case IRawDsPixelFormat d1 when targetPixelFormat is IRawDsPixelFormat d2:
-                ConvertTo(d1, sourceSpan, width, height, d2, targetSpan);
-                break;
+                return true;
+            case IRawDPixelFormat d1 when targetPixelFormat is IRawRPixelFormat r2:
+                ConvertTo(d1, sourceSpan, width, height, r2, targetSpan);
+                return true;
+            case IRawDPixelFormat d1 when targetPixelFormat is IRawLPixelFormat l2:
+                ConvertToAny(d1, sourceSpan, width, height, l2, targetSpan, (s, t) => l2.SetLuminance(t, d1.GetDepth(s)));
+                return true;
+
+            case IRawYuvaPixelFormat yuva1 when targetPixelFormat is IRawRgbaPixelFormat rgba2:
+                ConvertToAny(yuva1, sourceSpan, width, height, rgba2, targetSpan, (s, t) => rgba2.SetRgba(t, yuva1.GetRgbaBt601(s)));
+                return true;
+
+            case IRawYuvPixelFormat yuv1 when targetPixelFormat is IRawRgbPixelFormat rgb2:
+                ConvertToAny(yuv1, sourceSpan, width, height, rgb2, targetSpan, (s, t) => rgb2.SetRgb(t, yuv1.GetRgbBt601(s)));
+                return true;
+
+            case IRawLaPixelFormat la1 when targetPixelFormat is IRawRgbaPixelFormat rgba2:
+                ConvertToAny(la1, sourceSpan, width, height, rgba2, targetSpan, (s, t) => rgba2.SetRgba(t, new(new(la1.GetLuminance(s)), la1.GetAlpha(s))));
+                return true;
+            case IRawLaPixelFormat la1 when targetPixelFormat is IRawYuvaPixelFormat yuva2:
+                ConvertToAny(la1,
+                    sourceSpan,
+                    width,
+                    height,
+                    yuva2,
+                    targetSpan,
+                    (s, t) => yuva2.SetYuva(t, new(la1.GetLuminance(s), 0.5f, 0.5f, la1.GetAlpha(s))));
+                return true;
+            case IRawLaPixelFormat la1 when targetPixelFormat is IRawDsPixelFormat ds2:
+                ConvertToAny(la1, sourceSpan, width, height, ds2, targetSpan, (s, t) => ds2.SetDs(t, la1.GetLa(s)));
+                return true;
+
+            case IRawLPixelFormat l1 when targetPixelFormat is IRawRgbPixelFormat rgb2:
+                ConvertToAny(l1, sourceSpan, width, height, rgb2, targetSpan, (s, t) => rgb2.SetRgb(t, new(l1.GetLuminance(s))));
+                return true;
+            case IRawLPixelFormat l1 when targetPixelFormat is IRawRgPixelFormat rg2:
+                ConvertToAny(l1, sourceSpan, width, height, rg2, targetSpan, (s, t) => rg2.SetRg(t, new(l1.GetLuminance(s))));
+                return true;
+            case IRawLPixelFormat l1 when targetPixelFormat is IRawRPixelFormat r2:
+                ConvertToAny(l1, sourceSpan, width, height, r2, targetSpan, (s, t) => r2.SetRed(t, l1.GetLuminance(s)));
+                return true;
+            case IRawLPixelFormat l1 when targetPixelFormat is IRawGPixelFormat g2:
+                ConvertToAny(l1, sourceSpan, width, height, g2, targetSpan, (s, t) => g2.SetGreen(t, l1.GetLuminance(s)));
+                return true;
+            case IRawLPixelFormat l1 when targetPixelFormat is IRawYuvPixelFormat yuv2:
+                ConvertToAny(l1, sourceSpan, width, height, yuv2, targetSpan, (s, t) => yuv2.SetYuv(t, new(l1.GetLuminance(s), 0.5f, 0.5f)));
+                return true;
+            case IRawLPixelFormat l1 when targetPixelFormat is IRawDPixelFormat d2:
+                ConvertToAny(l1, sourceSpan, width, height, d2, targetSpan, (s, t) => d2.SetDepth(t, l1.GetLuminance(s)));
+                return true;
+            case IRawLPixelFormat l1 when targetPixelFormat is IRawAPixelFormat a2:
+                ConvertToAny(l1, sourceSpan, width, height, a2, targetSpan, (s, t) => a2.SetAlpha(t, l1.GetLuminance(s)));
+                return true;
+
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawYuvaPixelFormat yuva2:
+                ConvertToAny(a1, sourceSpan, width, height, yuva2, targetSpan, (s, t) => yuva2.SetYuva(t, new(1f, 0.5f, 0.5f, a1.GetAlpha(s))));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawYuvPixelFormat yuv2:
+                ConvertToAny(a1, sourceSpan, width, height, yuv2, targetSpan, (s, t) => yuv2.SetYuv(t, new(a1.GetAlpha(s), 0.5f, 0.5f)));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawRgbaPixelFormat rgba2:
+                ConvertToAny(a1, sourceSpan, width, height, rgba2, targetSpan, (s, t) => rgba2.SetRgba(t, new(1f, 1f, 1f, a1.GetAlpha(s))));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawRgbPixelFormat rgb2:
+                ConvertToAny(a1, sourceSpan, width, height, rgb2, targetSpan, (s, t) => rgb2.SetRgb(t, new(a1.GetAlpha(s))));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawRgPixelFormat rg2:
+                ConvertToAny(a1, sourceSpan, width, height, rg2, targetSpan, (s, t) => rg2.SetRg(t, new(a1.GetAlpha(s))));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawRPixelFormat r2:
+                ConvertToAny(a1, sourceSpan, width, height, r2, targetSpan, (s, t) => r2.SetRed(t, a1.GetAlpha(s)));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawGPixelFormat g2:
+                ConvertToAny(a1, sourceSpan, width, height, g2, targetSpan, (s, t) => g2.SetGreen(t, a1.GetAlpha(s)));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawLaPixelFormat la2:
+                ConvertToAny(a1, sourceSpan, width, height, la2, targetSpan, (s, t) => la2.SetLa(t, new(1f, a1.GetAlpha(s))));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawLPixelFormat l2:
+                ConvertToAny(a1, sourceSpan, width, height, l2, targetSpan, (s, t) => l2.SetLuminance(t, a1.GetAlpha(s)));
+                return true;
+            case IRawAPixelFormat a1 when targetPixelFormat is IRawAPixelFormat a2:
+                ConvertTo(a1, sourceSpan, width, height, a2, targetSpan);
+                return true;
+
+            default:
+                return false;
         }
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawRPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -342,7 +610,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRed(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRed(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawRPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -360,7 +628,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetStencil(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRed(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T>(
+    private static void ConvertTo<T>(
         IRawRPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -379,7 +647,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRed(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRedTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T, TDepth>(
+    private static void ConvertTo<T, TDepth>(
         IRawGPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -399,7 +667,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetStencil(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetGreenTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawGPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -417,7 +685,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetGreen(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetGreen(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawGPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -435,7 +703,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetDepth(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetGreen(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T>(
+    private static void ConvertTo<T>(
         IRawGPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -481,7 +749,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetGreen(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetGreenTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T>(
+    private static void ConvertTo<T>(
         IRawGPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -500,7 +768,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetDepth(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetGreenTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawRgPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -545,7 +813,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRg(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRg(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawRgPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -563,14 +831,14 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetDs(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRg(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T>(
+    private static void ConvertTo<T>(
         IRawRgPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
         int height,
         IRawRgPixelFormat<T> targetPixelFormat,
         Span<byte> targetSpan)
-        where T : unmanaged {
+        where T : unmanaged, IBinaryNumber<T> {
         var sourcePitch = sourcePixelFormat.CalculatePitch(width);
         var targetPitch = targetPixelFormat.CalculatePitch(width);
         var sourceBpp = sourcePixelFormat.BytesPerPixel;
@@ -582,7 +850,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRg(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRgTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawRgbPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -627,14 +895,14 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRgb(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRgb(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T>(
+    private static void ConvertTo<T>(
         IRawRgbPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
         int height,
         IRawRgbPixelFormat<T> targetPixelFormat,
         Span<byte> targetSpan)
-        where T : unmanaged, IMinMaxValue<T> {
+        where T : unmanaged, IMinMaxValue<T>, IBinaryNumber<T> {
         var sourcePitch = sourcePixelFormat.CalculatePitch(width);
         var targetPitch = targetPixelFormat.CalculatePitch(width);
         var sourceBpp = sourcePixelFormat.BytesPerPixel;
@@ -646,7 +914,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRgb(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRgbTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawAPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -691,7 +959,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetAlpha(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetAlpha(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T>(
+    private static void ConvertTo<T>(
         IRawAPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -710,7 +978,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetAlpha(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetAlphaTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawRgbaPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -755,14 +1023,14 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRgba(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRgba(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T>(
+    private static void ConvertTo<T>(
         IRawRgbaPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
         int height,
         IRawRgbaPixelFormat<T> targetPixelFormat,
         Span<byte> targetSpan)
-        where T : unmanaged, IMinMaxValue<T> {
+        where T : unmanaged, IMinMaxValue<T>, IBinaryNumber<T> {
         var sourcePitch = sourcePixelFormat.CalculatePitch(width);
         var targetPitch = targetPixelFormat.CalculatePitch(width);
         var sourceBpp = sourcePixelFormat.BytesPerPixel;
@@ -774,7 +1042,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRgba(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetRgbaTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawDPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -819,25 +1087,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetDepth(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetDepth(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
-        IRawDPixelFormat sourcePixelFormat,
-        ReadOnlySpan<byte> sourceSpan,
-        int width,
-        int height,
-        IRawRPixelFormat targetPixelFormat,
-        Span<byte> targetSpan) {
-        var sourcePitch = sourcePixelFormat.CalculatePitch(width);
-        var targetPitch = targetPixelFormat.CalculatePitch(width);
-        var sourceBpp = sourcePixelFormat.BytesPerPixel;
-        var targetBpp = targetPixelFormat.BytesPerPixel;
-        sourceSpan = sourceSpan[..(sourcePitch * height)];
-        targetSpan = targetSpan[..(targetPitch * height)];
-        for (; !sourceSpan.IsEmpty; sourceSpan = sourceSpan[sourcePitch..], targetSpan = targetSpan[targetPitch..])
-        for (var x = 0; x < width; x++)
-            targetPixelFormat.SetRed(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetDepth(sourceSpan[(x * sourceBpp)..]));
-    }
-
-    public static void ConvertTo<T>(
+    private static void ConvertTo<T>(
         IRawDPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -856,7 +1106,52 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetDepth(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetDepthTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo<T>(
+    private static void ConvertTo(
+        IRawDPixelFormat sourcePixelFormat,
+        ReadOnlySpan<byte> sourceSpan,
+        int width,
+        int height,
+        IRawRPixelFormat targetPixelFormat,
+        Span<byte> targetSpan) {
+        switch (sourcePixelFormat) {
+            case IRawDPixelFormat<byte> r1 when targetPixelFormat is IRawRPixelFormat<byte> r2:
+                ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
+                return;
+            case IRawDPixelFormat<sbyte> r1 when targetPixelFormat is IRawRPixelFormat<sbyte> r2:
+                ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
+                return;
+            case IRawDPixelFormat<ushort> r1 when targetPixelFormat is IRawRPixelFormat<ushort> r2:
+                ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
+                return;
+            case IRawDPixelFormat<short> r1 when targetPixelFormat is IRawRPixelFormat<short> r2:
+                ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
+                return;
+            case IRawDPixelFormat<uint> r1 when targetPixelFormat is IRawRPixelFormat<uint> r2:
+                ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
+                return;
+            case IRawDPixelFormat<int> r1 when targetPixelFormat is IRawRPixelFormat<int> r2:
+                ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
+                return;
+            case IRawDPixelFormat<Half> r1 when targetPixelFormat is IRawRPixelFormat<Half> r2:
+                ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
+                return;
+            case IRawDPixelFormat<float> r1 when targetPixelFormat is IRawRPixelFormat<float> r2:
+                ConvertTo(r1, sourceSpan, width, height, r2, targetSpan);
+                return;
+        }
+
+        var sourcePitch = sourcePixelFormat.CalculatePitch(width);
+        var targetPitch = targetPixelFormat.CalculatePitch(width);
+        var sourceBpp = sourcePixelFormat.BytesPerPixel;
+        var targetBpp = targetPixelFormat.BytesPerPixel;
+        sourceSpan = sourceSpan[..(sourcePitch * height)];
+        targetSpan = targetSpan[..(targetPitch * height)];
+        for (; !sourceSpan.IsEmpty; sourceSpan = sourceSpan[sourcePitch..], targetSpan = targetSpan[targetPitch..])
+        for (var x = 0; x < width; x++)
+            targetPixelFormat.SetRed(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetDepth(sourceSpan[(x * sourceBpp)..]));
+    }
+
+    private static void ConvertTo<T>(
         IRawDPixelFormat<T> sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -875,7 +1170,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetRed(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetDepthTyped(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawDsPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -890,10 +1185,10 @@ public static class PixelFormatUtilities {
         targetSpan = targetSpan[..(targetPitch * height)];
         for (; !sourceSpan.IsEmpty; sourceSpan = sourceSpan[sourcePitch..], targetSpan = targetSpan[targetPitch..])
         for (var x = 0; x < width; x++)
-            targetPixelFormat.SetDepth(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetDepth(sourceSpan[(x * sourceBpp)..]));
+            targetPixelFormat.SetDs(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetDs(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawDsPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -911,7 +1206,7 @@ public static class PixelFormatUtilities {
             targetPixelFormat.SetGreen(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetStencil(sourceSpan[(x * sourceBpp)..]));
     }
 
-    public static void ConvertTo(
+    private static void ConvertTo(
         IRawDsPixelFormat sourcePixelFormat,
         ReadOnlySpan<byte> sourceSpan,
         int width,
@@ -928,4 +1223,51 @@ public static class PixelFormatUtilities {
         for (var x = 0; x < width; x++)
             targetPixelFormat.SetRg(targetSpan[(x * targetBpp)..], sourcePixelFormat.GetDs(sourceSpan[(x * sourceBpp)..]));
     }
+
+    private static float Average(this Vector2 v3) => (v3.X + v3.Y) / 3;
+
+    private static float Average(this Vector3 v3) => (v3.X + v3.Y + v3.Z) / 3;
+
+    /// <summary>
+    /// Translate the given byte span into another, from a pixel format to another, using a converter delegate.
+    /// </summary>
+    /// <param name="sourcePixelFormat">Source pixel format.</param>
+    /// <param name="sourceSpan">Byte span containing source data.</param>
+    /// <param name="width">Width of the image.</param>
+    /// <param name="height">Height of the image.</param>
+    /// <param name="targetPixelFormat">Target pixel format.</param>
+    /// <param name="targetSpan">Byte span for translated data.</param>
+    /// <param name="convertPixelDelegate">Converter delegate.</param>
+    /// <typeparam name="TSource">Source raw pixel format.</typeparam>
+    /// <typeparam name="TTarget">Target raw pixel format.</typeparam>
+    /// <returns>Whether the operation was supported and successful.</returns>
+    public static void ConvertToAny<TSource, TTarget>(
+        TSource sourcePixelFormat,
+        ReadOnlySpan<byte> sourceSpan,
+        int width,
+        int height,
+        TTarget targetPixelFormat,
+        Span<byte> targetSpan,
+        ConvertPixelDelegate<TSource, TTarget> convertPixelDelegate)
+        where TSource : IRawPixelFormat
+        where TTarget : IRawPixelFormat {
+        var sourcePitch = sourcePixelFormat.CalculatePitch(width);
+        var targetPitch = targetPixelFormat.CalculatePitch(width);
+        var sourceBpp = sourcePixelFormat.BytesPerPixel;
+        var targetBpp = targetPixelFormat.BytesPerPixel;
+        sourceSpan = sourceSpan[..(sourcePitch * height)];
+        targetSpan = targetSpan[..(targetPitch * height)];
+        for (; !sourceSpan.IsEmpty; sourceSpan = sourceSpan[sourcePitch..], targetSpan = targetSpan[targetPitch..])
+        for (var x = 0; x < width; x++)
+            convertPixelDelegate(sourceSpan[(x * sourceBpp)..], targetSpan[(x * targetBpp)..]);
+    }
+
+    /// <summary>
+    /// A delegate for converting a pixel.
+    /// </summary>
+    /// <typeparam name="TSource">Source raw pixel format.</typeparam>
+    /// <typeparam name="TTarget">Target raw pixel format.</typeparam>
+    public delegate void ConvertPixelDelegate<in TSource, in TTarget>(
+        ReadOnlySpan<byte> sourceSpan,
+        Span<byte> targetSpan);
 }

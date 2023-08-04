@@ -9,7 +9,7 @@ public interface IRawGPixelFormat : IRawPixelFormat {
     public void SetGreen(Span<byte> pixel, float value);
 }
 
-public interface IRawGPixelFormat<T> : IRawGPixelFormat
+public interface IRawGPixelFormat<T> : IRawPixelFormat<T>, IRawGPixelFormat
     where T : unmanaged {
     public T GetGreenTyped(ReadOnlySpan<byte> pixel);
     public void SetGreen(Span<byte> pixel, T value);

@@ -16,7 +16,7 @@ public interface IRawRgPixelFormat : IRawRPixelFormat, IRawGPixelFormat {
 }
 
 public interface IRawRgPixelFormat<T> : IRawRgPixelFormat, IRawRPixelFormat<T>, IRawGPixelFormat<T>
-    where T : unmanaged {
+    where T : unmanaged, IBinaryNumber<T> {
     public Vector2<T> GetRgTyped(ReadOnlySpan<byte> pixel) => new(GetRedTyped(pixel), GetGreenTyped(pixel));
 
     public void SetRg(Span<byte> pixel, Vector2<T> rg) {

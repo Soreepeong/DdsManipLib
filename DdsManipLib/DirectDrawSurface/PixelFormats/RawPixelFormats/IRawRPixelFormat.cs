@@ -9,7 +9,7 @@ public interface IRawRPixelFormat : IRawPixelFormat {
     public void SetRed(Span<byte> pixel, float value);
 }
 
-public interface IRawRPixelFormat<T> : IRawRPixelFormat
+public interface IRawRPixelFormat<T> : IRawPixelFormat<T>, IRawRPixelFormat
     where T : unmanaged {
     public T GetRedTyped(ReadOnlySpan<byte> pixel);
     public void SetRed(Span<byte> pixel, T value);

@@ -28,16 +28,16 @@ internal unsafe ref struct Bc6ParsedBlock {
         Endpoints[0] = new(view.Get16(5), view.Get16(15), view.Get16(25));
         switch (Mode.Mode) {
             case 2:
-                Endpoints[0] = (Endpoints[0] & 0x3FF) | (new Vector3<int>(block[40], block[49], block[59]) << 10);
+                Endpoints[0] = (Endpoints[0] & 0x3FF) | new Vector3<int>(block[40] << 10, block[49] << 10, block[59] << 10);
                 break;
             case 6:
-                Endpoints[0] = (Endpoints[0] & 0x3FF) | (new Vector3<int>(block[39], block[50], block[59]) << 10);
+                Endpoints[0] = (Endpoints[0] & 0x3FF) | new Vector3<int>(block[39] << 10, block[50] << 10, block[59] << 10);
                 break;
             case 10:
-                Endpoints[0] = (Endpoints[0] & 0x3FF) | (new Vector3<int>(block[39], block[49], block[60]) << 10);
+                Endpoints[0] = (Endpoints[0] & 0x3FF) | new Vector3<int>(block[39] << 10, block[49] << 10, block[60] << 10);
                 break;
             case 7:
-                Endpoints[0] = (Endpoints[0] & 0x3FF) | (new Vector3<int>(block[44], block[54], block[64]) << 10);
+                Endpoints[0] = (Endpoints[0] & 0x3FF) | new Vector3<int>(block[44] << 10, block[54] << 10, block[64] << 10);
                 break;
             case 11:
                 Endpoints[0] = (Endpoints[0] & 0x3FF) | new Vector3<int>(

@@ -9,6 +9,10 @@ public static class Class1 {
     public static int Main(string[] args) {
         var ddsf = DdsFile.FromFile(@"Z:\test\v02_m0361b0001_n.dds");
         _ = ddsf.PixelFormat;
+        ddsf.ConvertTo(new DdspfLxUNormPixelFormat<byte>(8, 0, 8)).WriteToFile(@"Z:\test\l8.dds");
+        ddsf.ConvertTo(new DdspfLxAxUNormPixelFormat<byte>(16, 0, 8, 8, 8)).WriteToFile(@"Z:\test\la8.dds");
+        ddsf.ConvertTo(new DdspfYxUxVxUNormPixelFormat<byte>(24, 0, 8, 8, 8, 16, 8)).ConvertTo(new R8G8B8A8UNormPixelFormat(AlphaType.Straight)).WriteToFile(@"Z:\test\yuv8.dds");
+        ddsf.ConvertTo(new DdspfYxUxVxAxUNormPixelFormat<byte>(32, 0, 8, 8, 8, 16, 8, 24, 8)).ConvertTo(new R8G8B8A8UNormPixelFormat(AlphaType.Straight)).WriteToFile(@"Z:\test\yuva8.dds");
         ddsf.ConvertTo(new R1UNormPixelFormat()).ConvertTo(new B8G8R8X8UNormPixelFormat()).WriteToFile(@"Z:\test\r1.dds");
         ddsf.ConvertTo(new B5G5R5A1UNormPixelFormat(AlphaType.Straight)).WriteToFile(@"Z:\test\bgra5551.dds");
         ddsf.ConvertTo(new B5G6R5UNormPixelFormat()).WriteToFile(@"Z:\test\bgr565.dds");

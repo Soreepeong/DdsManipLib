@@ -1,7 +1,5 @@
 ﻿using System;
 
-#pragma warning disable CS1591
-
 namespace DdsManipLib.DirectDrawSurface.PixelFormats;
 
 /// <summary>

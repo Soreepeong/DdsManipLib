@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace DdsManipLib.Utilities;
 
-public struct Vector3<T> : IList<T>, IEquatable<Vector3<T>> where T : unmanaged, IBinaryInteger<T> {
+public struct Vector3<T> : IList<T>, IEquatable<Vector3<T>> where T : unmanaged, IBinaryNumber<T> {
     public T X;
     public T Y;
     public T Z;
@@ -147,9 +147,6 @@ public struct Vector3<T> : IList<T>, IEquatable<Vector3<T>> where T : unmanaged,
     public static Vector3<T> operator &(Vector3<T> l, Vector3<T> r) => new(l.X & r.X, l.Y & r.Y, l.Z & r.Z);
     public static Vector3<T> operator |(Vector3<T> l, Vector3<T> r) => new(l.X | r.X, l.Y | r.Y, l.Z | r.Z);
     public static Vector3<T> operator ^(Vector3<T> l, Vector3<T> r) => new(l.X ^ r.X, l.Y ^ r.Y, l.Z ^ r.Z);
-    public static Vector3<T> operator << (Vector3<T> l, Vector3<int> r) => new(l.X << r.X, l.Y << r.Y, l.Z << r.Z);
-    public static Vector3<T> operator >> (Vector3<T> l, Vector3<int> r) => new(l.X >> r.X, l.Y >> r.Y, l.Z >> r.Z);
-    public static Vector3<T> operator >>> (Vector3<T> l, Vector3<int> r) => new(l.X >>> r.X, l.Y >>> r.Y, l.Z >>> r.Z);
     public static Vector3<T> operator +(Vector3<T> l, T r) => new(l.X + r, l.Y + r, l.Z + r);
     public static Vector3<T> operator -(Vector3<T> l, T r) => new(l.X - r, l.Y - r, l.Z - r);
     public static Vector3<T> operator *(Vector3<T> l, T r) => new(l.X * r, l.Y * r, l.Z * r);
@@ -158,7 +155,4 @@ public struct Vector3<T> : IList<T>, IEquatable<Vector3<T>> where T : unmanaged,
     public static Vector3<T> operator &(Vector3<T> l, T r) => new(l.X & r, l.Y & r, l.Z & r);
     public static Vector3<T> operator |(Vector3<T> l, T r) => new(l.X | r, l.Y | r, l.Z | r);
     public static Vector3<T> operator ^(Vector3<T> l, T r) => new(l.X ^ r, l.Y ^ r, l.Z ^ r);
-    public static Vector3<T> operator << (Vector3<T> l, int r) => new(l.X << r, l.Y << r, l.Z << r);
-    public static Vector3<T> operator >> (Vector3<T> l, int r) => new(l.X >> r, l.Y >> r, l.Z >> r);
-    public static Vector3<T> operator >>> (Vector3<T> l, int r) => new(l.X >>> r, l.Y >>> r, l.Z >>> r);
 }

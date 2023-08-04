@@ -9,7 +9,7 @@ public interface IRawDPixelFormat : IRawPixelFormat {
     public void SetDepth(Span<byte> pixel, float value);
 }
 
-public interface IRawDPixelFormat<T> : IRawDPixelFormat
+public interface IRawDPixelFormat<T> : IRawPixelFormat<T>, IRawDPixelFormat
     where T : unmanaged {
     public T GetDepthTyped(ReadOnlySpan<byte> pixel);
     public void SetDepth(Span<byte> pixel, T value);

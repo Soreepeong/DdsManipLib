@@ -158,7 +158,7 @@ public struct DdsPixelFormat : IEquatable<DdsPixelFormat> {
     /// <summary>
     /// Construct a new instance of <see cref="DdsPixelFormat" /> containing YUV channels, optionally with an alpha channel.
     /// </summary>
-    public static DdsPixelFormat FromYuv(int nbits, uint ymask, uint umask, uint vmask, uint amask = 0u) => new() {
+    public static DdsPixelFormat FromYuva(int nbits, uint ymask, uint umask, uint vmask, uint amask = 0u) => new() {
         Size = Unsafe.SizeOf<DdsPixelFormat>(),
         RgbBitCount = nbits is > 0 and <= 32 ? nbits : throw new ArgumentOutOfRangeException(nameof(nbits), nbits, null),
         Flags = DdsPixelFormatFlags.Yuv | (amask == 0 ? 0 : DdsPixelFormatFlags.AlphaPixels),

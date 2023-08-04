@@ -38,6 +38,9 @@ public abstract class DdspfUNormPixelFormat : RawPixelFormat, IEquatable<DdspfUN
     public override int BitsPerPixel { get; }
     public override int BytesPerPixel { get; }
 
+    public override DdsPixelFormat DdsPixelFormat => 
+        DdsPixelFormat.FromRgba(BitsPerPixel, RedMax << RedShift, GreenMax << GreenShift, BlueMax << BlueShift, AlphaMax << AlphaShift);
+
     public uint GetRaw(ReadOnlySpan<byte> pixel) => BytesPerPixel switch {
         0 => 0u,
         1 => pixel[0],

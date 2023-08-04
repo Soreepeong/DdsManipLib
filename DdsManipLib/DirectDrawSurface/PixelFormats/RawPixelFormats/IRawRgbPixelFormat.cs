@@ -22,7 +22,7 @@ public interface IRawRgbPixelFormat : IRawRgPixelFormat {
 }
 
 public interface IRawRgbPixelFormat<T> : IRawRgbPixelFormat, IRawRgPixelFormat<T>
-    where T : unmanaged, IMinMaxValue<T> {
+    where T : unmanaged, IMinMaxValue<T>, IBinaryNumber<T> {
     public T GetBlueTyped(ReadOnlySpan<byte> pixel);
     public void SetBlue(Span<byte> pixel, T value);
 

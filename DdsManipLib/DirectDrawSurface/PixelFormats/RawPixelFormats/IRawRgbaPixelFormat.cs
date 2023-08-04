@@ -22,7 +22,7 @@ public interface IRawRgbaPixelFormat : IRawRgbPixelFormat, IRawAPixelFormat {
 }
 
 public interface IRawRgbaPixelFormat<T> : IRawRgbaPixelFormat, IRawRgbPixelFormat<T>, IRawAPixelFormat<T>
-    where T : unmanaged, IMinMaxValue<T> {
+    where T : unmanaged, IMinMaxValue<T>, IBinaryNumber<T> {
     public Vector4<T> GetRgbaTyped(ReadOnlySpan<byte> pixel) => new(GetRedTyped(pixel), GetGreenTyped(pixel), GetBlueTyped(pixel), GetAlphaTyped(pixel));
 
     public void SetRgba(Span<byte> pixel, Vector4<T> rgba) {
