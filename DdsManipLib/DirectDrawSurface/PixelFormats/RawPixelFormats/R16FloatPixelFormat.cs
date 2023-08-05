@@ -13,7 +13,7 @@ public sealed class R16FloatPixelFormat : RawRPixelFormat, IRawRPixelFormat<Half
     public override int BytesPerPixel => 2;
     public override float GetRed(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadSingleLittleEndian(pixel[OffsetR..]);
     public Half GetRedTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadHalfLittleEndian(pixel[OffsetR..]);
-    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, Half.CreateTruncating(value));
+    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, Half.CreateSaturating(value));
     public void SetRed(Span<byte> pixel, Half value) => BinaryPrimitives.WriteHalfLittleEndian(pixel[OffsetR..], value);
     public R16FloatPixelFormat() : base(AlphaType.None) { }
 }

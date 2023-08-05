@@ -17,7 +17,7 @@ public sealed class R24UNormX8TypelessPixelFormat : RawRPixelFormat, IRawRPixelF
     public uint GetRedTyped(ReadOnlySpan<byte> pixel) =>
         (uint) (pixel[OffsetR + 2] | (pixel[OffsetR] << 8) | (pixel[OffsetR + 1] << 16) | (pixel[OffsetR + 2] << 24));
 
-    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, uint.CreateTruncating(value * uint.MaxValue));
+    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, uint.CreateSaturating(value * uint.MaxValue));
 
     public void SetRed(Span<byte> pixel, uint value) {
         pixel[OffsetR] = (byte) (value >> 8);

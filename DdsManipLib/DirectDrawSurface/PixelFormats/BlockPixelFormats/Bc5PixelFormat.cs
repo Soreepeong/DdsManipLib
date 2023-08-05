@@ -60,7 +60,7 @@ public sealed class Bc5TypelessPixelFormat : Bc5PixelFormat {
 
 public sealed class Bc5UNormPixelFormat : Bc5PixelFormat, IPixelFormat {
     public override DxgiFormat DxgiFormat => DxgiFormat.Bc5UNorm;
-    public override DdsPixelFormat DdsPixelFormat => DdsPixelFormat.FromFourCc(DdsFourCc.Bc5U);
+    public override DdsFourCc FourCc => DdsFourCc.Bc5U;
     public override IRawPixelFormat SuggestedRawPixelFormat => new R8G8SNormPixelFormat();
 
     public bool IsDdsPixelFormat(in DdsPixelFormat ddspf)
@@ -69,7 +69,7 @@ public sealed class Bc5UNormPixelFormat : Bc5PixelFormat, IPixelFormat {
 
 public sealed class Bc5SNormPixelFormat : Bc5PixelFormat {
     public override DxgiFormat DxgiFormat => DxgiFormat.Bc5SNorm;
-    public override DdsPixelFormat DdsPixelFormat => DdsPixelFormat.FromFourCc(DdsFourCc.Bc5S);
+    public override DdsFourCc FourCc => DdsFourCc.Bc5S;
     public override IRawPixelFormat SuggestedRawPixelFormat => new R8G8SNormPixelFormat();
 
     protected override SquishOptions2 GetSquishOptions2(IRawPixelFormat fmt, SquishOptions2? template = default) =>

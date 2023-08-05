@@ -17,7 +17,6 @@ public interface IRawRgbaPixelFormat : IRawRgbPixelFormat, IRawAPixelFormat {
     }
 
     void IRawRgPixelFormat.SetRg(Span<byte> pixel, Vector2 rg) => SetRgba(pixel, new(rg, float.MaxValue, float.MaxValue));
-
     void IRawRgbPixelFormat.SetRgb(Span<byte> pixel, Vector3 rgb) => SetRgba(pixel, new(rgb, float.MaxValue));
 }
 
@@ -33,6 +32,5 @@ public interface IRawRgbaPixelFormat<T> : IRawRgbaPixelFormat, IRawRgbPixelForma
     }
 
     void IRawRgPixelFormat<T>.SetRg(Span<byte> pixel, Vector2<T> rg) => SetRgba(pixel, new(rg, T.MaxValue, T.MaxValue));
-
     void IRawRgbPixelFormat<T>.SetRgb(Span<byte> pixel, Vector3<T> rgba) => SetRgba(pixel, new(rgba, T.MaxValue));
 }

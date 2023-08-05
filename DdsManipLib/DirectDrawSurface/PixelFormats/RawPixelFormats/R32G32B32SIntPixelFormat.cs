@@ -13,9 +13,9 @@ public sealed class R32G32B32SIntPixelFormat : R32G32B32PixelFormat, IRawRgbPixe
     public int GetRedTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadInt32LittleEndian(pixel[OffsetR..]);
     public int GetGreenTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadInt32LittleEndian(pixel[OffsetG..]);
     public int GetBlueTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadInt32LittleEndian(pixel[OffsetB..]);
-    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, int.CreateTruncating(value));
-    public override void SetGreen(Span<byte> pixel, float value) => SetGreen(pixel, int.CreateTruncating(value));
-    public override void SetBlue(Span<byte> pixel, float value) => SetBlue(pixel, int.CreateTruncating(value));
+    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, int.CreateSaturating(value));
+    public override void SetGreen(Span<byte> pixel, float value) => SetGreen(pixel, int.CreateSaturating(value));
+    public override void SetBlue(Span<byte> pixel, float value) => SetBlue(pixel, int.CreateSaturating(value));
     public void SetRed(Span<byte> pixel, int value) => BinaryPrimitives.WriteInt32LittleEndian(pixel[OffsetR..], value);
     public void SetGreen(Span<byte> pixel, int value) => BinaryPrimitives.WriteInt32LittleEndian(pixel[OffsetG..], value);
     public void SetBlue(Span<byte> pixel, int value) => BinaryPrimitives.WriteInt32LittleEndian(pixel[OffsetB..], value);

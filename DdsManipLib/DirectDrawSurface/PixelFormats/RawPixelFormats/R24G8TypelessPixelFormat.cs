@@ -18,14 +18,14 @@ public sealed class R24G8TypelessPixelFormat : RawRgPixelFormat, IRawRgPixelForm
     float IRawGPixelFormat<float>.GetGreenTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
     uint IRawRPixelFormat<uint>.GetRedTyped(ReadOnlySpan<byte> pixel) => GetRedRaw(pixel);
     uint IRawGPixelFormat<uint>.GetGreenTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
-    int IRawRPixelFormat<int>.GetRedTyped(ReadOnlySpan<byte> pixel) => PixelFormatUtilities.RawToSInt(GetRedRaw(pixel), 24);
+    int IRawRPixelFormat<int>.GetRedTyped(ReadOnlySpan<byte> pixel) => PixelFormatUtilities.RawToSInt((int) GetRedRaw(pixel), 24);
     int IRawGPixelFormat<int>.GetGreenTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
-    public override void SetRed(Span<byte> pixel, float value) => SetRedRaw(pixel, PixelFormatUtilities.UIntToRaw(uint.CreateTruncating(value), 24));
-    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateTruncating(value);
+    public override void SetRed(Span<byte> pixel, float value) => SetRedRaw(pixel, PixelFormatUtilities.UIntToRaw(uint.CreateSaturating(value), 24));
+    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateSaturating(value);
     public void SetRed(Span<byte> pixel, uint value) => SetRedRaw(pixel, PixelFormatUtilities.UIntToRaw(value, 24));
-    public void SetGreen(Span<byte> pixel, uint value) => pixel[OffsetG] = byte.CreateTruncating(value);
-    public void SetRed(Span<byte> pixel, int value) => SetRedRaw(pixel, PixelFormatUtilities.SIntToRaw(value, 24));
-    public void SetGreen(Span<byte> pixel, int value) => pixel[OffsetG] = byte.CreateTruncating(value);
+    public void SetGreen(Span<byte> pixel, uint value) => pixel[OffsetG] = byte.CreateSaturating(value);
+    public void SetRed(Span<byte> pixel, int value) => SetRedRaw(pixel, (uint) PixelFormatUtilities.SIntToRaw(value, 24));
+    public void SetGreen(Span<byte> pixel, int value) => pixel[OffsetG] = byte.CreateSaturating(value);
 
     private static uint GetRedRaw(ReadOnlySpan<byte> pixel) => (uint) (pixel[OffsetR] | (pixel[OffsetR + 1] << 8) | (pixel[OffsetR + 2] << 16));
 

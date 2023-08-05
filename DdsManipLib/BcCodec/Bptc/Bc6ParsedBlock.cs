@@ -232,14 +232,14 @@ internal unsafe ref struct Bc6ParsedBlock {
     }
 
     private static Vector3<int> RawToSInt(in Vector3<int> rawValue, int sourceBits) => new(
-        PixelFormatUtilities.RawToSInt((uint) rawValue.X, sourceBits),
-        PixelFormatUtilities.RawToSInt((uint) rawValue.Y, sourceBits),
-        PixelFormatUtilities.RawToSInt((uint) rawValue.Z, sourceBits));
+        PixelFormatUtilities.RawToSInt(rawValue.X, sourceBits),
+        PixelFormatUtilities.RawToSInt(rawValue.Y, sourceBits),
+        PixelFormatUtilities.RawToSInt(rawValue.Z, sourceBits));
 
     private static Vector3<int> RawToSInt(in Vector3<int> rawValue, in Vector3<byte> sourceBits) => new(
-        PixelFormatUtilities.RawToSInt((uint) rawValue.X, sourceBits.X),
-        PixelFormatUtilities.RawToSInt((uint) rawValue.Y, sourceBits.Y),
-        PixelFormatUtilities.RawToSInt((uint) rawValue.Z, sourceBits.Z));
+        PixelFormatUtilities.RawToSInt(rawValue.X, sourceBits.X),
+        PixelFormatUtilities.RawToSInt(rawValue.Y, sourceBits.Y),
+        PixelFormatUtilities.RawToSInt(rawValue.Z, sourceBits.Z));
 
     public static Vector3<int> Unquantize(bool signed, in Vector3<int> comp, int uBitsPerComp) => new(
         Unquantize(signed, comp.X, uBitsPerComp),

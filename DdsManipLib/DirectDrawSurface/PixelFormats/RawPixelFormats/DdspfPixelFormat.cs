@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Numerics;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
-public abstract class DdspfUNormPixelFormat : RawPixelFormat, IEquatable<DdspfUNormPixelFormat> {
-    internal DdspfUNormPixelFormat(int nbits, int rshift, int rbits, int gshift, int gbits, int bshift, int bbits, int ashift, int abits) :
+public abstract class DdspfPixelFormat : RawPixelFormat, IEquatable<DdspfPixelFormat> {
+    internal DdspfPixelFormat(int nbits, int rshift, int rbits, int gshift, int gbits, int bshift, int bbits, int ashift, int abits) :
         base(abits == 0 ? AlphaType.None : AlphaType.Straight) {
         BitsPerPixel = nbits;
         BytesPerPixel = (nbits + 7) / 8;
@@ -38,7 +39,7 @@ public abstract class DdspfUNormPixelFormat : RawPixelFormat, IEquatable<DdspfUN
     public override int BitsPerPixel { get; }
     public override int BytesPerPixel { get; }
 
-    public override DdsPixelFormat DdsPixelFormat => 
+    public override DdsPixelFormat DdsPixelFormat =>
         DdsPixelFormat.FromRgba(BitsPerPixel, RedMax << RedShift, GreenMax << GreenShift, BlueMax << BlueShift, AlphaMax << AlphaShift);
 
     public uint GetRaw(ReadOnlySpan<byte> pixel) => BytesPerPixel switch {
@@ -69,8 +70,26 @@ public abstract class DdspfUNormPixelFormat : RawPixelFormat, IEquatable<DdspfUN
         }
     }
 
+    public T GetRaw<T>(ReadOnlySpan<byte> pixel, int shift) where T : unmanaged, IBinaryInteger<T> => T.CreateTruncating(GetRaw(pixel) >> shift);
+
+    public void UpdateRaw<T>(Span<byte> pixel, int shift, int bits, T value) where T : unmanaged, IBinaryInteger<T> =>
+        SetRaw(pixel, GetRaw(pixel) & ~(((1u << bits) - 1u) << shift) | (uint.CreateTruncating(value) << shift));
+
+    public T GetUNorm<T>(ReadOnlySpan<byte> pixel, int shift, int bits) where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T> =>
+        PixelFormatUtilities.RawToUNorm(GetRaw<T>(pixel, shift), bits);
+
+    public float GetFloatFromUNorm<T>(ReadOnlySpan<byte> pixel, int shift, int bits)
+        where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>, IMinMaxValue<T> =>
+        float.CreateSaturating(GetUNorm<T>(pixel, shift, bits)) / float.CreateTruncating(T.MaxValue);
+
+    public void UpdateUNorm<T>(Span<byte> pixel, int shift, int bits, T value) where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
+        => UpdateRaw(pixel, shift, bits, PixelFormatUtilities.UNormToRaw(value, bits));
+
+    public void UpdateUNorm<T>(Span<byte> pixel, int shift, int bits, float value) where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
+        => UpdateRaw(pixel, shift, bits, PixelFormatUtilities.FloatToUNormRaw<T>(value, bits));
+
     /// <inheritdoc/>
-    public bool Equals(DdspfUNormPixelFormat? other) {
+    public bool Equals(DdspfPixelFormat? other) {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
         if (other.GetType() != GetType()) return false;
@@ -80,7 +99,7 @@ public abstract class DdspfUNormPixelFormat : RawPixelFormat, IEquatable<DdspfUN
     }
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => Equals(obj as DdspfUNormPixelFormat);
+    public override bool Equals(object? obj) => Equals(obj as DdspfPixelFormat);
 
     /// <inheritdoc/>
     public override int GetHashCode() {
@@ -97,7 +116,14 @@ public abstract class DdspfUNormPixelFormat : RawPixelFormat, IEquatable<DdspfUN
         return hashCode.ToHashCode();
     }
 
-    public static bool operator ==(DdspfUNormPixelFormat? left, DdspfUNormPixelFormat? right) => Equals(left, right);
+    public static bool operator ==(DdspfPixelFormat? left, DdspfPixelFormat? right) => Equals(left, right);
 
-    public static bool operator !=(DdspfUNormPixelFormat? left, DdspfUNormPixelFormat? right) => !Equals(left, right);
+    public static bool operator !=(DdspfPixelFormat? left, DdspfPixelFormat? right) => !Equals(left, right);
+
+    public override void ClearPixel(Span<byte> pixel) {
+        if (AlphaBits == 0)
+            pixel[..BytesPerPixel].Clear();
+        else
+            SetRaw(pixel, AlphaMax << AlphaShift);
+    }
 }

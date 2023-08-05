@@ -11,8 +11,8 @@ public sealed class R32G32SIntPixelFormat : R32G32PixelFormat, IRawRgPixelFormat
     public override float GetGreen(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt32LittleEndian(pixel[OffsetG..]);
     public int GetRedTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadInt32LittleEndian(pixel[OffsetR..]);
     public int GetGreenTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadInt32LittleEndian(pixel[OffsetG..]);
-    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, int.CreateTruncating(value));
-    public override void SetGreen(Span<byte> pixel, float value) => SetGreen(pixel, int.CreateTruncating(value));
+    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, int.CreateSaturating(value));
+    public override void SetGreen(Span<byte> pixel, float value) => SetGreen(pixel, int.CreateSaturating(value));
     public void SetRed(Span<byte> pixel, int value) => BinaryPrimitives.WriteInt32LittleEndian(pixel[OffsetR..], value);
     public void SetGreen(Span<byte> pixel, int value) => BinaryPrimitives.WriteInt32LittleEndian(pixel[OffsetG..], value);
 }

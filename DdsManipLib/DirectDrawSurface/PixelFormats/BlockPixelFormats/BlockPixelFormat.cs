@@ -5,7 +5,8 @@ namespace DdsManipLib.DirectDrawSurface.PixelFormats.BlockPixelFormats;
 
 public abstract class BlockPixelFormat : IBlockPixelFormat {
     public virtual DxgiFormat DxgiFormat => DxgiFormat.Unknown;
-    public virtual DdsPixelFormat DdsPixelFormat => DdsPixelFormat.FromFourCc(DdsFourCc.Dx10);
+    public virtual DdsFourCc FourCc => DdsFourCc.Unknown;
+    public virtual DdsPixelFormat DdsPixelFormat => default;
     public AlphaType AlphaType { get; }
     public abstract int BitsPerPixel { get; }
     public abstract int CalculatePitch(int width);

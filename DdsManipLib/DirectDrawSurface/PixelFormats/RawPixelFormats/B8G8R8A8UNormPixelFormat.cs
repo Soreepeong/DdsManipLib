@@ -5,10 +5,11 @@
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
 public sealed class B8G8R8A8UNormPixelFormat : B8G8R8A8PixelFormat, IRawRgbaPixelFormat<byte> {
+    public override DdsFourCc FourCc => AlphaType != AlphaType.Straight ? DdsFourCc.Unknown : DdsFourCc.D3dFmtA8R8G8B8;
     public override DxgiFormat DxgiFormat => DxgiFormat.B8G8R8A8UNorm;
 
     public override DdsPixelFormat DdsPixelFormat => AlphaType != AlphaType.Straight
-        ? DdsPixelFormat.FromFourCc(DdsFourCc.Dx10)
+        ? default
         : DdsPixelFormat.FromRgba(32, 0xFF0000, 0xFF00, 0xFF, 0xFF000000);
 
     public override float GetRed(ReadOnlySpan<byte> pixel) => pixel[OffsetR] / 255f;
@@ -19,10 +20,10 @@ public sealed class B8G8R8A8UNormPixelFormat : B8G8R8A8PixelFormat, IRawRgbaPixe
     public byte GetGreenTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
     public byte GetBlueTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetB];
     public byte GetAlphaTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetA];
-    public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateTruncating(value * 256f);
-    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateTruncating(value * 256f);
-    public override void SetBlue(Span<byte> pixel, float value) => pixel[OffsetB] = byte.CreateTruncating(value * 256f);
-    public override void SetAlpha(Span<byte> pixel, float value) => pixel[OffsetA] = byte.CreateTruncating(value * 256f);
+    public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateSaturating(value * 256f);
+    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateSaturating(value * 256f);
+    public override void SetBlue(Span<byte> pixel, float value) => pixel[OffsetB] = byte.CreateSaturating(value * 256f);
+    public override void SetAlpha(Span<byte> pixel, float value) => pixel[OffsetA] = byte.CreateSaturating(value * 256f);
     public void SetRed(Span<byte> pixel, byte value) => pixel[OffsetR] = value;
     public void SetGreen(Span<byte> pixel, byte value) => pixel[OffsetG] = value;
     public void SetBlue(Span<byte> pixel, byte value) => pixel[OffsetB] = value;

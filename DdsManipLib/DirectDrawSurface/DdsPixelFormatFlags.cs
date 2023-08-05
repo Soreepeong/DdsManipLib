@@ -6,7 +6,7 @@ namespace DdsManipLib.DirectDrawSurface;
 /// Values which indicate what type of data is in the surface.
 /// </summary>
 [Flags]
-public enum DdsPixelFormatFlags {
+public enum DdsPixelFormatFlags : uint {
     /// <summary>
     /// Texture contains alpha data.
     /// </summary>
@@ -31,7 +31,13 @@ public enum DdsPixelFormatFlags {
     /// <see cref="DdsPixelFormat.FourCc"/> contains valid data.
     /// </remarks>
     FourCc = 0x4,
-
+    
+    /// <summary>
+    /// Texture is stored in a palletizized format.
+    /// </summary>
+    /// <remarks>From https://ffmpeg.org/doxygen/trunk/dds_8c_source.html</remarks>
+    Palette = 0x20,
+    
     /// <summary>
     /// Texture contains uncompressed RGB data.
     /// </summary>
@@ -61,6 +67,12 @@ public enum DdsPixelFormatFlags {
     /// Can be combined with DDPF_ALPHAPIXELS for a two channel DDS file.
     /// </remarks>
     Luminance = 0x20000,
+
+    /// <summary>
+    /// Texture contains a normal map, and the Z (blue channel) value needs to be calculated.
+    /// </summary>
+    /// <remarks>From https://ffmpeg.org/doxygen/trunk/dds_8c_source.html</remarks>
+    NormalMap = 0x80000000,
 
     /// <summary>
     /// Mask for all flags that will set <see cref="DdsPixelFormat.RgbBitCount"/> as a valid value.

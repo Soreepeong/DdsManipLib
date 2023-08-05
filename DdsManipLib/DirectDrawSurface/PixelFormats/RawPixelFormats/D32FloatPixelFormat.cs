@@ -15,4 +15,6 @@ public sealed class D32FloatPixelFormat : RawPixelFormat, IRawDPixelFormat<float
     public float GetDepthTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadSingleLittleEndian(pixel[OffsetD..]);
     public void SetDepth(Span<byte> pixel, float value) => BinaryPrimitives.WriteSingleLittleEndian(pixel[OffsetD..], value);
     public D32FloatPixelFormat() : base(AlphaType.None) { }
+
+    public override void ClearPixel(Span<byte> pixel) => pixel[..BytesPerPixel].Clear();
 }

@@ -13,7 +13,7 @@ public sealed class R32UIntPixelFormat : RawRPixelFormat, IRawRPixelFormat<uint>
     public override int BytesPerPixel => 4;
     public override float GetRed(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt32LittleEndian(pixel[OffsetR..]);
     public uint GetRedTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt32LittleEndian(pixel[OffsetR..]);
-    public override void SetRed(Span<byte> pixel, float value) => BinaryPrimitives.WriteUInt32LittleEndian(pixel[OffsetR..], uint.CreateTruncating(value));
+    public override void SetRed(Span<byte> pixel, float value) => BinaryPrimitives.WriteUInt32LittleEndian(pixel[OffsetR..], uint.CreateSaturating(value));
     public void SetRed(Span<byte> pixel, uint value) => BinaryPrimitives.WriteUInt32LittleEndian(pixel[OffsetR..], value);
     public R32UIntPixelFormat() : base(AlphaType.None) { }
 }

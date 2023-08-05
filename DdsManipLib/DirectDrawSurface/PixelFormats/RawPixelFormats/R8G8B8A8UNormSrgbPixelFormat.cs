@@ -14,10 +14,10 @@ public sealed class R8G8B8A8UNormSrgbPixelFormat : R8G8B8A8PixelFormat, IRawRgba
     public byte GetGreenTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
     public byte GetBlueTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetB];
     public byte GetAlphaTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetA];
-    public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateTruncating(value * 256f);
-    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateTruncating(value * 256f);
-    public override void SetBlue(Span<byte> pixel, float value) => pixel[OffsetB] = byte.CreateTruncating(value * 256f);
-    public override void SetAlpha(Span<byte> pixel, float value) => pixel[OffsetA] = byte.CreateTruncating(value * 256f);
+    public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateSaturating(value * 256f);
+    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateSaturating(value * 256f);
+    public override void SetBlue(Span<byte> pixel, float value) => pixel[OffsetB] = byte.CreateSaturating(value * 256f);
+    public override void SetAlpha(Span<byte> pixel, float value) => pixel[OffsetA] = byte.CreateSaturating(value * 256f);
     public void SetRed(Span<byte> pixel, byte value) => pixel[OffsetR] = value;
     public void SetGreen(Span<byte> pixel, byte value) => pixel[OffsetG] = value;
     public void SetBlue(Span<byte> pixel, byte value) => pixel[OffsetB] = value;

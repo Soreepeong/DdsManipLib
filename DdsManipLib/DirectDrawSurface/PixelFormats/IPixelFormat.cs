@@ -13,11 +13,18 @@ public interface IPixelFormat {
     public DxgiFormat DxgiFormat { get; }
     
     /// <summary>
+    /// Corresponding <see cref="DdsFourCc"/> for this <see cref="IPixelFormat"/>.
+    /// </summary>
+    /// <remarks>
+    /// Contains <see cref="DdsFourCc.Unknown"/> if not representable.
+    /// </remarks>
+    public DdsFourCc FourCc { get; }
+    
+    /// <summary>
     /// Corresponding <see cref="DdsPixelFormat"/> for this <see cref="IPixelFormat"/>.
     /// </summary>
     /// <remarks>
-    /// Contains <see cref="DdsFourCc.Dx10"/> if not representable solely via <see cref="DdsPixelFormat"/>.
-    /// Note that <see cref="DdsHeaderDxt10"/> still may indicate that the pixel format has no corresponding <see cref="DxgiFormat"/>.
+    /// Contains the default value if not representable solely via <see cref="DdsPixelFormat"/> without using <see cref="DdsFourCc"/>.
     /// </remarks>
     public DdsPixelFormat DdsPixelFormat { get; }
 

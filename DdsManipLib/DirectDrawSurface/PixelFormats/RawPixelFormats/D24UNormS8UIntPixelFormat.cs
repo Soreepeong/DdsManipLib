@@ -18,8 +18,8 @@ public sealed class D24UNormS8UIntPixelFormat : RawPixelFormat, IRawDsPixelForma
         (uint) (pixel[OffsetD + 2] | (pixel[OffsetD] << 8) | (pixel[OffsetD + 1] << 16) | (pixel[OffsetD + 2] << 24));
 
     public byte GetStencilTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetS];
-    public void SetDepth(Span<byte> pixel, float value) => SetDepth(pixel, uint.CreateTruncating(value * uint.MaxValue));
-    public void SetStencil(Span<byte> pixel, float value) => pixel[OffsetS] = byte.CreateTruncating(value);
+    public void SetDepth(Span<byte> pixel, float value) => SetDepth(pixel, uint.CreateSaturating(value * uint.MaxValue));
+    public void SetStencil(Span<byte> pixel, float value) => pixel[OffsetS] = byte.CreateSaturating(value);
 
     public void SetDepth(Span<byte> pixel, uint value) {
         pixel[OffsetD] = (byte) (value >> 8);
@@ -30,4 +30,6 @@ public sealed class D24UNormS8UIntPixelFormat : RawPixelFormat, IRawDsPixelForma
     public void SetStencil(Span<byte> pixel, byte value) => pixel[OffsetS] = value;
 
     public D24UNormS8UIntPixelFormat() : base(AlphaType.None) { }
+
+    public override void ClearPixel(Span<byte> pixel) => pixel[..BytesPerPixel].Clear();
 }

@@ -7,10 +7,11 @@ using DdsManipLib.Utilities;
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
 public sealed class B4G4R4A4UNormPixelFormat : RawRgbaPixelFormat, IRawRgbaPixelFormat<byte> {
+    public override DdsFourCc FourCc => AlphaType != AlphaType.Straight ? DdsFourCc.Unknown : DdsFourCc.D3dFmtA4R4G4B4;
     public override DxgiFormat DxgiFormat => DxgiFormat.B4G4R4A4UNorm;
 
     public override DdsPixelFormat DdsPixelFormat => AlphaType != AlphaType.Straight
-        ? DdsPixelFormat.FromFourCc(DdsFourCc.Dx10)
+        ? default
         : DdsPixelFormat.FromRgba(16, 0xF00, 0xF0, 0xF, 0xF000);
 
     public override int BitsPerPixel => 16;
@@ -40,10 +41,10 @@ public sealed class B4G4R4A4UNormPixelFormat : RawRgbaPixelFormat, IRawRgbaPixel
     public void SetRgba(Span<byte> pixel, Vector4 rgba) => SetRgba(
         pixel,
         new Vector4<byte>(
-            byte.CreateTruncating(rgba.X * 256),
-            byte.CreateTruncating(rgba.Y * 256),
-            byte.CreateTruncating(rgba.Z * 256),
-            byte.CreateTruncating(rgba.W * 256)));
+            byte.CreateSaturating(rgba.X * 256),
+            byte.CreateSaturating(rgba.Y * 256),
+            byte.CreateSaturating(rgba.Z * 256),
+            byte.CreateSaturating(rgba.W * 256)));
 
     public B4G4R4A4UNormPixelFormat(AlphaType alphaType) : base(alphaType) { }
 }

@@ -15,10 +15,10 @@ public sealed class R16G16B16A16UIntPixelFormat : R16G16B16A16PixelFormat, IRawR
     public ushort GetGreenTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt16LittleEndian(pixel[OffsetG..]);
     public ushort GetBlueTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt16LittleEndian(pixel[OffsetB..]);
     public ushort GetAlphaTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt16LittleEndian(pixel[OffsetA..]);
-    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, ushort.CreateTruncating(value));
-    public override void SetGreen(Span<byte> pixel, float value) => SetGreen(pixel, ushort.CreateTruncating(value));
-    public override void SetBlue(Span<byte> pixel, float value) => SetBlue(pixel, ushort.CreateTruncating(value));
-    public override void SetAlpha(Span<byte> pixel, float value) => SetAlpha(pixel, ushort.CreateTruncating(value));
+    public override void SetRed(Span<byte> pixel, float value) => SetRed(pixel, ushort.CreateSaturating(value));
+    public override void SetGreen(Span<byte> pixel, float value) => SetGreen(pixel, ushort.CreateSaturating(value));
+    public override void SetBlue(Span<byte> pixel, float value) => SetBlue(pixel, ushort.CreateSaturating(value));
+    public override void SetAlpha(Span<byte> pixel, float value) => SetAlpha(pixel, ushort.CreateSaturating(value));
     public void SetRed(Span<byte> pixel, ushort value) => BinaryPrimitives.WriteUInt16LittleEndian(pixel[OffsetR..], value);
     public void SetGreen(Span<byte> pixel, ushort value) => BinaryPrimitives.WriteUInt16LittleEndian(pixel[OffsetG..], value);
     public void SetBlue(Span<byte> pixel, ushort value) => BinaryPrimitives.WriteUInt16LittleEndian(pixel[OffsetB..], value);

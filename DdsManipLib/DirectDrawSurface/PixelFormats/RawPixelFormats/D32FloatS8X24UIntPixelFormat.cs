@@ -17,7 +17,9 @@ public sealed class D32FloatS8X24UIntPixelFormat : RawPixelFormat, IRawDsPixelFo
     public float GetDepthTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadSingleLittleEndian(pixel[OffsetD..]);
     public byte GetStencilTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetS];
     public void SetDepth(Span<byte> pixel, float value) => BinaryPrimitives.WriteSingleLittleEndian(pixel[OffsetD..], value);
-    public void SetStencil(Span<byte> pixel, float value) => pixel[OffsetS] = byte.CreateTruncating(value);
+    public void SetStencil(Span<byte> pixel, float value) => pixel[OffsetS] = byte.CreateSaturating(value);
     public void SetStencil(Span<byte> pixel, byte value) => pixel[OffsetS] = value;
     public D32FloatS8X24UIntPixelFormat() : base(AlphaType.None) { }
+
+    public override void ClearPixel(Span<byte> pixel) => pixel[..BytesPerPixel].Clear();
 }

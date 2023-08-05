@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using DdsManipLib.Utilities;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
@@ -18,28 +17,19 @@ public interface IRawYuvPixelFormat : IRawLPixelFormat {
         SetChromaRed(pixel, yuv.Z);
     }
 
-    public Vector3 GetRgbBt601(ReadOnlySpan<byte> pixel) => Vector3.Transform(GetYuv(pixel) - new Vector3(0, 0.5f, 0.5f), PixelFormatUtilities.YuvToRgbBt601);
+    public Vector3 GetRgbBt601(ReadOnlySpan<byte> pixel) => Vector3.Transform(GetYuv(pixel), PixelFormatUtilities.YuvToRgbBt601);
 
-    public void SetRgbBt601(Span<byte> pixel, Vector3 rgb) =>
-        SetYuv(pixel, Vector3.Transform(rgb, PixelFormatUtilities.RgbToYuvBt601) + new Vector3(0, 0.5f, 0.5f));
+    public void SetRgbBt601(Span<byte> pixel, Vector3 rgb) => SetYuv(pixel, Vector3.Transform(rgb, PixelFormatUtilities.RgbToYuvBt601));
 
-    public Vector3 GetRgbBt709(ReadOnlySpan<byte> pixel) => Vector3.Transform(GetYuv(pixel) - new Vector3(0, 0.5f, 0.5f), PixelFormatUtilities.YuvToRgbBt709);
+    public Vector3 GetRgbBt709(ReadOnlySpan<byte> pixel) => Vector3.Transform(GetYuv(pixel), PixelFormatUtilities.YuvToRgbBt709);
 
-    public void SetRgbBt709(Span<byte> pixel, Vector3 rgb) =>
-        SetYuv(pixel, Vector3.Transform(rgb, PixelFormatUtilities.RgbToYuvBt709) + new Vector3(0, 0.5f, 0.5f));
+    public void SetRgbBt709(Span<byte> pixel, Vector3 rgb) => SetYuv(pixel, Vector3.Transform(rgb, PixelFormatUtilities.RgbToYuvBt709));
 }
 
-public interface IRawYuvPixelFormat<T> : IRawYuvPixelFormat, IRawLPixelFormat<T> where T : unmanaged, IBinaryNumber<T> {
+public interface IRawYuvPixelFormat<T> : IRawYuvPixelFormat, IRawLPixelFormat<T>
+    where T : unmanaged, IBinaryNumber<T> {
     public T GetChromaBlueTyped(ReadOnlySpan<byte> pixel);
     public void SetChromaBlue(Span<byte> pixel, T value);
     public T GetChromaRedTyped(ReadOnlySpan<byte> pixel);
     public void SetChromaRed(Span<byte> pixel, T value);
-
-    public Vector3<T> GetYuvTyped(ReadOnlySpan<byte> pixel) => new(GetLuminanceTyped(pixel), GetChromaBlueTyped(pixel), GetChromaRedTyped(pixel));
-
-    public void SetYuv(Span<byte> pixel, Vector3<T> yuv) {
-        SetLuminance(pixel, yuv.X);
-        SetChromaBlue(pixel, yuv.Y);
-        SetChromaRed(pixel, yuv.Z);
-    }
 }

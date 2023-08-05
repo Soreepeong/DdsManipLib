@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 #pragma warning disable CS1591
 
@@ -10,7 +11,7 @@ public interface IRawDPixelFormat : IRawPixelFormat {
 }
 
 public interface IRawDPixelFormat<T> : IRawPixelFormat<T>, IRawDPixelFormat
-    where T : unmanaged {
+    where T : unmanaged, IBinaryNumber<T> {
     public T GetDepthTyped(ReadOnlySpan<byte> pixel);
     public void SetDepth(Span<byte> pixel, T value);
 }

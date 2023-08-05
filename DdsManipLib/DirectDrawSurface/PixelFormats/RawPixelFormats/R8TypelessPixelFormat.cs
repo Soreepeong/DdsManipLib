@@ -13,7 +13,7 @@ public sealed class R8TypelessPixelFormat : RawRPixelFormat, IRawRPixelFormat<by
     public override float GetRed(ReadOnlySpan<byte> pixel) => pixel[OffsetR];
     byte IRawRPixelFormat<byte>.GetRedTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetR];
     sbyte IRawRPixelFormat<sbyte>.GetRedTyped(ReadOnlySpan<byte> pixel) => (sbyte) pixel[OffsetR];
-    public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateTruncating(value);
+    public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateSaturating(value);
     public void SetRed(Span<byte> pixel, byte value) => pixel[OffsetR] = value;
     public void SetRed(Span<byte> pixel, sbyte value) => pixel[OffsetR] = (byte) value;
     public R8TypelessPixelFormat() : base(AlphaType.None) { }

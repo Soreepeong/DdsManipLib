@@ -7,6 +7,7 @@ using System.Numerics;
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
 public sealed class R10G10B10A2UNormPixelFormat : R10G10B10A2PixelFormat, IRawRgbaPixelFormat, IRawRgbPixelFormat<ushort>, IRawAPixelFormat<byte> {
+    public override DdsFourCc FourCc => AlphaType != AlphaType.Straight ? DdsFourCc.Unknown : DdsFourCc.D3dFmtA2B10G10R10;
     public override DxgiFormat DxgiFormat => DxgiFormat.R10G10B10A2UNorm;
     public override float GetRed(ReadOnlySpan<byte> pixel) => GetRedRaw(pixel) / 1023f;
     public override float GetGreen(ReadOnlySpan<byte> pixel) => GetGreenRaw(pixel) / 1023f;

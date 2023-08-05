@@ -20,7 +20,7 @@ public partial class DdsFile {
     /// </summary>
     /// <param name="mipmapIndex">Index of the mipmap.</param>
     /// <returns>Number of bytes.</returns>
-    public int SliceSize(int mipmapIndex) => PixelFormat.CalculateLinearSize(Width(mipmapIndex), Height(mipmapIndex));
+    public int SliceSize(int mipmapIndex) => PixelFormat?.CalculateLinearSize(Width(mipmapIndex), Height(mipmapIndex)) ?? 0;
 
     /// <summary>
     /// Get the number of bytes occupied by the specified mipmap in this file.

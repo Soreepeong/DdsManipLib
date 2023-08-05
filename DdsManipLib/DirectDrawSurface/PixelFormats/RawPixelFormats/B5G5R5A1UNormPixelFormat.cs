@@ -11,6 +11,7 @@ public sealed class B5G5R5A1UNormPixelFormat : RawRgbaPixelFormat, IRawRgbaPixel
     public const ushort GreenMask = 0b0_00000_11111_00000;
     public const ushort RedMask = 0b0_11111_00000_00000;
     public const ushort AlphaMask = 0b1_00000_00000_00000;
+    public override DdsFourCc FourCc => AlphaType != AlphaType.Straight ? DdsFourCc.Unknown : DdsFourCc.D3dFmtA1R5G5B5;
     public override DxgiFormat DxgiFormat => DxgiFormat.B5G5R5A1UNorm;
 
     public override DdsPixelFormat DdsPixelFormat => DdsPixelFormat.FromRgba(16, RedMask, GreenMask, BlueMask, AlphaMask);

@@ -5,7 +5,7 @@ using System.Buffers.Binary;
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
-public sealed class R32FloatX8X24TypelessPixelFormat : RawRPixelFormat, IRawRPixelFormat<float>, IRawRAlignedFloatPixelFormat {
+public sealed class R32FloatX8X24TypelessPixelFormat : RawRPixelFormat, IRawRAlignedFloatPixelFormat {
     public const int OffsetR = 0;
 
     public override DxgiFormat DxgiFormat => DxgiFormat.R32FloatX8X24Typeless;

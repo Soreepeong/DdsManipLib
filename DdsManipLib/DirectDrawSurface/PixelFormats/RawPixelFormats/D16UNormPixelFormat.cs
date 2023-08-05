@@ -13,7 +13,9 @@ public sealed class D16UNormPixelFormat : RawPixelFormat, IRawDPixelFormat<ushor
     public override int BytesPerPixel => 2;
     public float GetDepth(ReadOnlySpan<byte> pixel) => GetDepthTyped(pixel) / 65535f;
     public ushort GetDepthTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt16LittleEndian(pixel[OffsetD..]);
-    public void SetDepth(Span<byte> pixel, float value) => SetDepth(pixel, ushort.CreateTruncating(value * 65536f));
+    public void SetDepth(Span<byte> pixel, float value) => SetDepth(pixel, ushort.CreateSaturating(value * 65536f));
     public void SetDepth(Span<byte> pixel, ushort value) => BinaryPrimitives.WriteUInt16LittleEndian(pixel[OffsetD..], value);
     public D16UNormPixelFormat() : base(AlphaType.None) { }
+
+    public override void ClearPixel(Span<byte> pixel) => pixel[..BytesPerPixel].Clear();
 }

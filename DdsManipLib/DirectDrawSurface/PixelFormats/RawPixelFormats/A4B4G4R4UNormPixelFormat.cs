@@ -36,10 +36,10 @@ public sealed class A4B4G4R4UNormPixelFormat : RawRgbaPixelFormat, IRawRgbaPixel
     public void SetRgba(Span<byte> pixel, Vector4 rgba) => SetRgba(
         pixel,
         new Vector4<byte>(
-            byte.CreateTruncating(rgba.X * 256),
-            byte.CreateTruncating(rgba.Y * 256),
-            byte.CreateTruncating(rgba.Z * 256),
-            byte.CreateTruncating(rgba.W * 256)));
+            byte.CreateSaturating(rgba.X * 256),
+            byte.CreateSaturating(rgba.Y * 256),
+            byte.CreateSaturating(rgba.Z * 256),
+            byte.CreateSaturating(rgba.W * 256)));
 
     public A4B4G4R4UNormPixelFormat(AlphaType alphaType) : base(alphaType) { }
 }

@@ -18,17 +18,17 @@ public sealed class R8G8B8A8TypelessPixelFormat : R8G8B8A8PixelFormat, IRawRgbaP
     sbyte IRawGPixelFormat<sbyte>.GetGreenTyped(ReadOnlySpan<byte> pixel) => (sbyte) pixel[OffsetG];
     sbyte IRawRgbPixelFormat<sbyte>.GetBlueTyped(ReadOnlySpan<byte> pixel) => (sbyte) pixel[OffsetB];
     sbyte IRawAPixelFormat<sbyte>.GetAlphaTyped(ReadOnlySpan<byte> pixel) => (sbyte) pixel[OffsetA];
-    public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateTruncating(value);
-    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateTruncating(value);
-    public override void SetBlue(Span<byte> pixel, float value) => pixel[OffsetB] = byte.CreateTruncating(value);
-    public override void SetAlpha(Span<byte> pixel, float value) => pixel[OffsetA] = byte.CreateTruncating(value);
+    public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateSaturating(value);
+    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateSaturating(value);
+    public override void SetBlue(Span<byte> pixel, float value) => pixel[OffsetB] = byte.CreateSaturating(value);
+    public override void SetAlpha(Span<byte> pixel, float value) => pixel[OffsetA] = byte.CreateSaturating(value);
     public void SetRed(Span<byte> pixel, byte value) => pixel[OffsetR] = value;
     public void SetGreen(Span<byte> pixel, byte value) => pixel[OffsetG] = value;
     public void SetBlue(Span<byte> pixel, byte value) => pixel[OffsetB] = value;
     public void SetAlpha(Span<byte> pixel, byte value) => pixel[OffsetA] = value;
-    public void SetRed(Span<byte> pixel, sbyte value) => pixel[OffsetR] = byte.CreateTruncating(value);
-    public void SetGreen(Span<byte> pixel, sbyte value) => pixel[OffsetG] = byte.CreateTruncating(value);
-    public void SetBlue(Span<byte> pixel, sbyte value) => pixel[OffsetB] = byte.CreateTruncating(value);
-    public void SetAlpha(Span<byte> pixel, sbyte value) => pixel[OffsetA] = byte.CreateTruncating(value);
+    public void SetRed(Span<byte> pixel, sbyte value) => pixel[OffsetR] = byte.CreateSaturating(value);
+    public void SetGreen(Span<byte> pixel, sbyte value) => pixel[OffsetG] = byte.CreateSaturating(value);
+    public void SetBlue(Span<byte> pixel, sbyte value) => pixel[OffsetB] = byte.CreateSaturating(value);
+    public void SetAlpha(Span<byte> pixel, sbyte value) => pixel[OffsetA] = byte.CreateSaturating(value);
     public R8G8B8A8TypelessPixelFormat(AlphaType alphaType) : base(alphaType) { }
 }

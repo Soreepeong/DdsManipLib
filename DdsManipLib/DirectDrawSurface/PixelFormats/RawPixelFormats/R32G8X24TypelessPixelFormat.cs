@@ -22,11 +22,11 @@ public sealed class R32G8X24TypelessPixelFormat : RawRgPixelFormat, IRawRgPixelF
     int IRawRPixelFormat<int>.GetRedTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadInt32LittleEndian(pixel[OffsetR..]);
     int IRawGPixelFormat<int>.GetGreenTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
     public override void SetRed(Span<byte> pixel, float value) => BinaryPrimitives.WriteSingleLittleEndian(pixel[OffsetR..], value);
-    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateTruncating(value);
+    public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateSaturating(value);
     public void SetRed(Span<byte> pixel, uint value) => BinaryPrimitives.WriteUInt32LittleEndian(pixel[OffsetR..], value);
-    public void SetGreen(Span<byte> pixel, uint value) => pixel[OffsetG] = byte.CreateTruncating(value);
+    public void SetGreen(Span<byte> pixel, uint value) => pixel[OffsetG] = byte.CreateSaturating(value);
     public void SetRed(Span<byte> pixel, int value) => BinaryPrimitives.WriteInt32LittleEndian(pixel[OffsetR..], value);
-    public void SetGreen(Span<byte> pixel, int value) => pixel[OffsetG] = byte.CreateTruncating(value);
+    public void SetGreen(Span<byte> pixel, int value) => pixel[OffsetG] = byte.CreateSaturating(value);
     public R32G8X24TypelessPixelFormat() : base(AlphaType.None) { }
 
     int IRawRAlignedFloatPixelFormat.OffsetR => OffsetR;

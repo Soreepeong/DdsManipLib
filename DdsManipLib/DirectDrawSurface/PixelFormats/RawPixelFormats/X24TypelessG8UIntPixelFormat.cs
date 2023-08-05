@@ -13,8 +13,10 @@ public sealed class X24TypelessG8UIntPixelFormat : RawPixelFormat, IRawGPixelFor
     public float GetGreen(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
     byte IRawGPixelFormat<byte>.GetGreenTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
     sbyte IRawGPixelFormat<sbyte>.GetGreenTyped(ReadOnlySpan<byte> pixel) => (sbyte) pixel[OffsetG];
-    public void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateTruncating(value);
-    public void SetGreen(Span<byte> pixel, byte value) => pixel[OffsetG] = byte.CreateTruncating(value);
-    public void SetGreen(Span<byte> pixel, sbyte value) => pixel[OffsetG] = byte.CreateTruncating(value);
+    public void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateSaturating(value);
+    public void SetGreen(Span<byte> pixel, byte value) => pixel[OffsetG] = byte.CreateSaturating(value);
+    public void SetGreen(Span<byte> pixel, sbyte value) => pixel[OffsetG] = byte.CreateSaturating(value);
     public X24TypelessG8UIntPixelFormat() : base(AlphaType.None) { }
+
+    public override void ClearPixel(Span<byte> pixel) => pixel[..BytesPerPixel].Clear();
 }

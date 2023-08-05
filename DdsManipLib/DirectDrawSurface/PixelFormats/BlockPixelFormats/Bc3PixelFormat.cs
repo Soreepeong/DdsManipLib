@@ -67,13 +67,12 @@ public sealed class Bc3TypelessPixelFormat : Bc3PixelFormat {
 
 public sealed class Bc3UNormPixelFormat : Bc3PixelFormat {
     public override DxgiFormat DxgiFormat => DxgiFormat.Bc3UNorm;
-
-    public override DdsPixelFormat DdsPixelFormat =>
-        DdsPixelFormat.FromFourCc(AlphaType switch {
-            AlphaType.Premultiplied => DdsFourCc.Dxt4,
-            AlphaType.Straight => DdsFourCc.Dxt5,
-            _ => DdsFourCc.Dx10,
-        });
+    
+    public override DdsFourCc FourCc => AlphaType switch {
+        AlphaType.Premultiplied => DdsFourCc.Dxt4,
+        AlphaType.Straight => DdsFourCc.Dxt5,
+        _ => DdsFourCc.Unknown,
+    };
 
     public override IRawPixelFormat SuggestedRawPixelFormat => AlphaType == AlphaType.None
         ? new B8G8R8X8UNormPixelFormat()

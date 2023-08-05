@@ -16,10 +16,12 @@ public sealed class D16UNormS8UIntPixelFormat : RawPixelFormat, IRawDsPixelForma
     public float GetStencil(ReadOnlySpan<byte> pixel) => pixel[OffsetS];
     public ushort GetDepthTyped(ReadOnlySpan<byte> pixel) => BinaryPrimitives.ReadUInt16LittleEndian(pixel[OffsetD..]);
     public byte GetStencilTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetS];
-    public void SetDepth(Span<byte> pixel, float value) => SetDepth(pixel, ushort.CreateTruncating(value * ushort.MaxValue));
-    public void SetStencil(Span<byte> pixel, float value) => pixel[OffsetS] = byte.CreateTruncating(value);
+    public void SetDepth(Span<byte> pixel, float value) => SetDepth(pixel, ushort.CreateSaturating(value * ushort.MaxValue));
+    public void SetStencil(Span<byte> pixel, float value) => pixel[OffsetS] = byte.CreateSaturating(value);
     public void SetDepth(Span<byte> pixel, ushort value) => BinaryPrimitives.WriteUInt16LittleEndian(pixel[OffsetD..], value);
     public void SetStencil(Span<byte> pixel, byte value) => pixel[OffsetS] = value;
 
     public D16UNormS8UIntPixelFormat() : base(AlphaType.None) { }
+
+    public override void ClearPixel(Span<byte> pixel) => pixel[..BytesPerPixel].Clear();
 }

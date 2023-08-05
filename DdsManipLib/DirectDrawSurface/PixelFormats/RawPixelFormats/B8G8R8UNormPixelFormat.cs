@@ -4,23 +4,33 @@
 
 namespace DdsManipLib.DirectDrawSurface.PixelFormats.RawPixelFormats;
 
-public sealed class B8G8R8A8UNormSrgbPixelFormat : B8G8R8A8PixelFormat, IRawRgbaPixelFormat<byte> {
-    public override DxgiFormat DxgiFormat => DxgiFormat.B8G8R8A8UNormSrgb;
+public class B8G8R8UNormPixelFormat : RawRgbPixelFormat, IRawRgbAlignedBytePixelFormat, IRawRgbPixelFormat<byte> {
+    public const int OffsetB = 0;
+    public const int OffsetG = 1;
+    public const int OffsetR = 2;
+
+    public override DdsPixelFormat DdsPixelFormat => DdsPixelFormat.FromRgba(24, 0xFF, 0xFF00, 0xFF0000);
+    public override DdsFourCc FourCc => DdsFourCc.D3dFmtR8G8B8;
+
+    public override int BitsPerPixel => 32;
+    public override int BytesPerPixel => 4;
+    
     public override float GetRed(ReadOnlySpan<byte> pixel) => pixel[OffsetR] / 255f;
     public override float GetGreen(ReadOnlySpan<byte> pixel) => pixel[OffsetG] / 255f;
     public override float GetBlue(ReadOnlySpan<byte> pixel) => pixel[OffsetB] / 255f;
-    public override float GetAlpha(ReadOnlySpan<byte> pixel) => pixel[OffsetA] / 255f;
     public byte GetRedTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetR];
     public byte GetGreenTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetG];
     public byte GetBlueTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetB];
-    public byte GetAlphaTyped(ReadOnlySpan<byte> pixel) => pixel[OffsetA];
     public override void SetRed(Span<byte> pixel, float value) => pixel[OffsetR] = byte.CreateSaturating(value * 256f);
     public override void SetGreen(Span<byte> pixel, float value) => pixel[OffsetG] = byte.CreateSaturating(value * 256f);
     public override void SetBlue(Span<byte> pixel, float value) => pixel[OffsetB] = byte.CreateSaturating(value * 256f);
-    public override void SetAlpha(Span<byte> pixel, float value) => pixel[OffsetA] = byte.CreateSaturating(value * 256f);
     public void SetRed(Span<byte> pixel, byte value) => pixel[OffsetR] = value;
     public void SetGreen(Span<byte> pixel, byte value) => pixel[OffsetG] = value;
     public void SetBlue(Span<byte> pixel, byte value) => pixel[OffsetB] = value;
-    public void SetAlpha(Span<byte> pixel, byte value) => pixel[OffsetA] = value;
-    public B8G8R8A8UNormSrgbPixelFormat(AlphaType alphaType) : base(alphaType) { }
+    
+    protected B8G8R8UNormPixelFormat() : base(AlphaType.None) { }
+
+    int IRawRAlignedBytePixelFormat.OffsetR => OffsetR;
+    int IRawRgAlignedBytePixelFormat.OffsetG => OffsetG;
+    int IRawRgbAlignedBytePixelFormat.OffsetB => OffsetB;
 }

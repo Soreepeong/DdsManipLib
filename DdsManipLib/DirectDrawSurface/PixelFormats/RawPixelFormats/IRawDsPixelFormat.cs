@@ -18,8 +18,8 @@ public interface IRawDsPixelFormat : IRawDPixelFormat {
 }
 
 public interface IRawDsPixelFormat<TDepth, TStencil> : IRawDPixelFormat<TDepth>, IRawDsPixelFormat
-    where TDepth : unmanaged
-    where TStencil : unmanaged {
+    where TDepth : unmanaged, IBinaryNumber<TDepth>
+    where TStencil : unmanaged, IBinaryNumber<TStencil> {
     public TStencil GetStencilTyped(ReadOnlySpan<byte> pixel);
     public void SetStencil(Span<byte> pixel, TStencil value);
 }

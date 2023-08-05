@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 #pragma warning disable CS1591
 
@@ -10,7 +11,7 @@ public interface IRawRPixelFormat : IRawPixelFormat {
 }
 
 public interface IRawRPixelFormat<T> : IRawPixelFormat<T>, IRawRPixelFormat
-    where T : unmanaged {
+    where T : unmanaged, IBinaryNumber<T> {
     public T GetRedTyped(ReadOnlySpan<byte> pixel);
     public void SetRed(Span<byte> pixel, T value);
 }
